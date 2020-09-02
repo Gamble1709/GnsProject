@@ -12,7 +12,7 @@ import sys
 
 
 
-class Personajes(pg.sprite.Sprite):
+class personaje(pg.sprite.Sprite):
 
     def __init__(self):
 
@@ -148,7 +148,7 @@ class Personajes(pg.sprite.Sprite):
 
 
 
-class Enemigos(pg.sprite.Sprite):
+class Enemigo(pg.sprite.Sprite):
 
     def __init__(self):
 
@@ -198,7 +198,7 @@ class Enemigos(pg.sprite.Sprite):
 
 
 
-class Bloques(pg.sprite.Sprite):
+class Bloque(pg.sprite.Sprite):
 
     def __init__(self, X, Y):
 
@@ -237,17 +237,17 @@ Bonus_group= pg.sprite .Group()
 
 
 #Instanciando Enemigo + posición
-Enemigo_Basico= Enemigos()
+Enemigo_Basico= Enemigo()
 Enemigo_Basico.Posicion(700, 395)
 Enemigos_group.add(Enemigo_Basico)
 
-#Instanciando personaje principal
-Personaje=Personajes()
-sprites.add(Personaje)
+#Instanciando personajePrincipalPrincipal principal
+personajePrincipal=personaje()
+sprites.add(personajePrincipal)
 N=0
 
 #Instanciando Bloques
-Bonus= Bloques(600, 275)
+Bonus= Bloque(600, 275)
 Bonus_group.add(Bonus)
 
 
@@ -267,9 +267,9 @@ Bajar=True
 
 
 
-#Muerte del personaje principal
-Muerte_Personaje=False
-Mover_Personaje=True
+#Muerte del personajePrincipal principal
+Muerte_personajePrincipal=False
+Mover_personajePrincipal=True
 contar=False
 
 
@@ -299,12 +299,12 @@ while True:
 
     #Creando colisión con enemigos
     
-    Colision= pg.sprite.spritecollide(Personaje, Enemigos_group, False)
+    Colision= pg.sprite.spritecollide(personajePrincipal, Enemigos_group, False)
 
     if Colision:
 
-        #Sí la posición en Y es menor al enemigo, significa que el personaje colisionó estando en el aire y cayendo encima del enemigo
-        if Personaje.Saltar or (Personaje.rect.y + 20 < Enemigo_Basico.rect.y):
+        #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
+        if personajePrincipal.Saltar or (personajePrincipal.rect.y + 20 < Enemigo_Basico.rect.y):
 
             Enemigo_Basico.Velocidad=0
             Enemigo_Basico.image=Enemigo_1[2]
@@ -321,8 +321,8 @@ while True:
 
         else:
 
-            Mover_Personaje=False
-            Muerte_Personaje=True
+            Mover_personajePrincipal=False
+            Muerte_personajePrincipal=True
             Contar=True
 
         
@@ -342,9 +342,9 @@ while True:
 
 
 
-    if Muerte_Personaje:
+    if Muerte_personajePrincipal:
 
-        Personaje.image=Muerte
+        personajePrincipal.image=Muerte
         sprites.draw(Ventana)
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
@@ -354,24 +354,26 @@ while True:
 
             if Contador >=50:
 
-                Personaje.kill()
+                personajePrincipal.kill()
                 Contador=0
         
 
 
-    Colision_bonus= pg.sprite.spritecollide(Personaje, Bonus_group, False)
+    Colision_bonus= pg.sprite.spritecollide(personajePrincipal, Bonus_group, False)
 
     if Colision_bonus:
 
-        if Personaje.rect.top == Bonus.rect.bottom:
+        if personajePrincipal.rect.top <= Bonus.rect.bottom:
 
             Bonus.rect.y-=10
+            personajePrincipal.aumento=0
+            personajePrincipal.Saltar=True
         
 
-    #Mover personaje y enemigos
+    #Mover personajePrincipal y enemigos
 
-    if Mover_Personaje:
-        Personaje.Movimiento()
+    if Mover_personajePrincipal:
+        personajePrincipal.Movimiento()
 
     if Mover:
         Enemigo_Basico.Mover()
@@ -382,32 +384,32 @@ while True:
 
 
     #Salto
-    if Personaje.Saltar:
+    if personajePrincipal.Saltar:
                 
-        Personaje.rect.y+=Personaje.aumento
-        Personaje.image= Saltos[N]
-        Personaje.aumento+=3
+        personajePrincipal.rect.y+=personajePrincipal.aumento
+        personajePrincipal.image= Saltos[N]
+        personajePrincipal.aumento+=3
 
 
         #Mover a la derecha durante el salto
         if Tecla[K_d]:
-            Personaje.rect.x+=10
+            personajePrincipal.rect.x+=10
             N=1
 
-            Personaje.Dir=0
+            personajePrincipal.Dir=0
 
         #Mover a la izquierda durante el salto
         elif Tecla[K_a]:
-            Personaje.rect.x-=10
+            personajePrincipal.rect.x-=10
             N=0
 
             
-            Personaje.Dir=1
+            personajePrincipal.Dir=1
 
         #límite de caída
-        if Personaje.aumento >= 33:
-            Personaje.Saltar=False
-            Personaje.aumento=-30
+        if personajePrincipal.aumento >= 33:
+            personajePrincipal.Saltar=False
+            personajePrincipal.aumento=-30
 
 
     Reloj.tick(Fps)
