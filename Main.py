@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1
 
-from Blocks import Bloque_Bonus
+from Blocks import bloqueBonus, bloqueBonus_2, suelo
 
 from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco
 
@@ -200,12 +200,12 @@ class Enemigo(pg.sprite.Sprite):
 
 class Bloque(pg.sprite.Sprite):
 
-    def __init__(self, X, Y):
+    def __init__(self, X, Y, imagen):
 
         super().__init__()
 
         #Asignando imagen
-        self.image= Bloque_Bonus
+        self.image= imagen
 
         #Obteniendo cuadrado del sprite
         self.rect= self.image.get_rect()
@@ -229,27 +229,56 @@ Reloj= pg.time.Clock()
 
 
 
-#Sprites
+#grupos de Sprites
 sprites= pg.sprite.Group()
-Enemigos_group= pg.sprite.Group()
-Bonus_group= pg.sprite .Group()
-
+enemigosBasicos= pg.sprite.Group()
+bloquesBonus= pg.sprite.Group()
+bloquesSimples= pg.sprite.Group()
 
 
 #Instanciando Enemigo + posición
 Enemigo_Basico= Enemigo()
 Enemigo_Basico.Posicion(700, 395)
-Enemigos_group.add(Enemigo_Basico)
+enemigosBasicos.add(Enemigo_Basico)
 
 #Instanciando personajePrincipalPrincipal principal
 personajePrincipal=personaje()
 sprites.add(personajePrincipal)
 N=0
 
-#Instanciando Bloques
-Bonus= Bloque(600, 275)
-Bonus_group.add(Bonus)
 
+#Instanciando Bloques
+Bonus= Bloque(600, 275, bloqueBonus)
+bloquesBonus.add(Bonus)
+
+
+#Crear animación de subida y bajado
+animacionBonus=False
+subir=-8
+
+
+#Creando bloques en orden
+distanciaX=0
+distanciaY=435
+
+for x in range(75):
+    sueloBasico= Bloque(distanciaX, distanciaY, suelo)
+    bloquesSimples.add(sueloBasico)
+    distanciaX+=45
+
+distanciaX=0
+
+cont=0
+#Creación de bloques vacíos (solo por decoración)
+
+for x in range(50):
+    sueloBasico= Bloque(distanciaX, distanciaY, suelo)
+    distanciaX+=45
+
+    if cont == 25:
+
+        distanciaX=0
+        distanciaY+=25
 
 
 #Creación de ventana + ícono de la misma
@@ -288,24 +317,28 @@ while True:
 
     #Actualización de los sprites
     sprites.update()
-    Enemigos_group.update()
+    enemigosBasicos.update()
+    bloquesSimples.update()
 
 
     #Dibujando sprites
-    Enemigos_group.draw(Ventana)
+    enemigosBasicos.draw(Ventana)
     sprites.draw(Ventana)
-    Bonus_group.draw(Ventana)
+    bloquesBonus.draw(Ventana)
+    bloquesSimples.draw(Ventana)
+
 
 
     #Creando colisión con enemigos
     
-    Colision= pg.sprite.spritecollide(personajePrincipal, Enemigos_group, False)
+    Colision= pg.sprite.spritecollide(personajePrincipal, enemigosBasicos, False)
 
     if Colision:
 
         #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
         if personajePrincipal.Saltar or (personajePrincipal.rect.y + 20 < Enemigo_Basico.rect.y):
 
+            personajePrincipal.aumento=-30
             Enemigo_Basico.Velocidad=0
             Enemigo_Basico.image=Enemigo_1[2]
             Mover=False
@@ -328,7 +361,7 @@ while True:
         
     if Continua:
         
-        Enemigos_group.draw(Ventana)
+        enemigosBasicos.draw(Ventana)
         Contar=True
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
@@ -337,12 +370,11 @@ while True:
 
             if Contador >=50:
                 Enemigo_Basico.kill()
-                Muerte=False
                 Contador=0
 
 
 
-    if Muerte_personajePrincipal:
+    if Muerte_personajePrincipal or (Muerte_personajePrincipal and colisionSuelo):
 
         personajePrincipal.image=Muerte
         sprites.draw(Ventana)
@@ -359,16 +391,49 @@ while True:
         
 
 
-    Colision_bonus= pg.sprite.spritecollide(personajePrincipal, Bonus_group, False)
+    #Colisión con bloque bonus
+    Colision_bonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
 
     if Colision_bonus:
 
         if personajePrincipal.rect.top <= Bonus.rect.bottom:
-
-            Bonus.rect.y-=10
+            
+            #Esto para que al colisionar baje y no continue subiendo
             personajePrincipal.aumento=0
-            personajePrincipal.Saltar=True
+
+            animacionBonus=True
+
+    colisionSuelo= pg.sprite.spritecollide(personajePrincipal, bloquesSimples, False)
+
+
+    if animacionBonus:
+
+        Bonus.rect.y+=subir
+        subir+=1
+
+        if subir == 8:
+            
+            Bonus.image= bloqueBonus_2
+            animacionBonus=False
+            subir=-8
+    
+    #Colsisión con el suelo
+    if colisionSuelo:
+
+        if personajePrincipal.rect.bottom >= sueloBasico.rect.top:
+
+            personajePrincipal.Saltar=False
+            personajePrincipal.aumento=-30
+            personajePrincipal.rect.bottom= sueloBasico.rect.top+3
+
+
+    else:
+
+        if not personajePrincipal.Saltar:
+
+            personajePrincipal.rect.y+=5
         
+
 
     #Mover personajePrincipal y enemigos
 
@@ -406,14 +471,7 @@ while True:
             
             personajePrincipal.Dir=1
 
-        #límite de caída
-        if personajePrincipal.aumento >= 33:
-            personajePrincipal.Saltar=False
-            personajePrincipal.aumento=-30
 
 
     Reloj.tick(Fps)
     pg.display.update()
-
-
-
