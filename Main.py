@@ -21,6 +21,8 @@ class personaje(pg.sprite.Sprite):
         #Control de sprites
         self.pasos=0
 
+        self.posX=0
+
         #Activar - Desactivar Sniper
         self.francotirador= False
 
@@ -81,8 +83,8 @@ class personaje(pg.sprite.Sprite):
 
             #Evitar movimiento mientras se ejecute el salto
             if self.Saltar:
-                pass
 
+                pass
 
             #Salto combinado
             elif Tecla[K_d] and Tecla[K_w]:
@@ -96,7 +98,7 @@ class personaje(pg.sprite.Sprite):
 
                 pass
 
-            
+
             #Caminar derecha 
             else:
 
@@ -132,9 +134,9 @@ class personaje(pg.sprite.Sprite):
 
             #Evitar movimiento mientras se ejecute el salto
             if self.Saltar:
+
                 pass
 
-            
             #Salto combinado
             elif Tecla[K_a] and Tecla[K_w]:
 
@@ -147,7 +149,7 @@ class personaje(pg.sprite.Sprite):
 
                 pass
             
-            
+
             #Caminar Izquierda
             else:
                 
@@ -473,18 +475,18 @@ sprites.add(personajePrincipal)
 
 
 #Instanciando Bloques
-Bonus= Bloque(600, 275, bloqueBonus)
-bloquesBonus.add(Bonus)
+bonus= Bloque(600, 275, bloqueBonus)
+bloquesBonus.add(bonus)
 
 
 #Instanciación de los potenciadores
 
-hongos= Potenciador(Bonus.rect.x, Bonus.rect.y -3, hongo)
-armas= Potenciador(Bonus.rect.x, Bonus.rect.y -3, arma)
+hongos= Potenciador(bonus.rect.x, bonus.rect.y -3, hongo)
+armas= Potenciador(bonus.rect.x, bonus.rect.y -3, arma)
 
 
 #Crear animación de subida y bajada bloque bonus
-animacionBonus=False
+animacionbonus=False
 subir=-8
 animacion=False
 
@@ -579,6 +581,7 @@ while True:
     bloquesSimples.update()
     bloquesDecoracion.update()
     potenciadores.update()
+    bloquesBonus.update()
 
 
     #Dibujando sprites
@@ -669,18 +672,33 @@ while True:
         
         
     #Colisión del personaje con el bloque bonus
+
+    if (personajePrincipal.rect.x + 63 >= bonus.rect.left and personajePrincipal.rect.top <= bonus.rect.bottom -3)\
+       and personajePrincipal.rect.x < bonus.rect.right:
+           
+
+        personajePrincipal.rect.x= personajePrincipal.posX
+
+
+    elif (personajePrincipal.rect.x <= bonus.rect.right and personajePrincipal.rect.top <= bonus.rect.bottom -3) \
+         and personajePrincipal.rect.x > bonus.rect.left:
+
+        personajePrincipal.rect.x= personajePrincipal.posX
+
+
+    else:
+
+        personajePrincipal.posX= personajePrincipal.rect.x
+
         
-    colisionBonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
+        
+    colisionbonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
 
-    if colisionBonus:
 
-      
-        if personajePrincipal.rect.top - 3 < Bonus.rect.bottom and (personajePrincipal.rect.right -6 >= Bonus.rect.left):
+    if colisionbonus:
 
-            personajePrincipal.velocidad=0
-
-            
-        if personajePrincipal.rect.top <= Bonus.rect.bottom:
+        
+        if personajePrincipal.rect.y <= bonus.rect.bottom and personajePrincipal.rect.x + 63 > bonus.rect.left:
             
             #Esto para que al colisionar baje y no continue subiendo
             personajePrincipal.rect.y+=3
@@ -688,23 +706,23 @@ while True:
 
             if not animacion:
                 
-                animacionBonus=True
+                animacionbonus=True
 
             else:
 
                 personajePrincipal.rect.y+=3
 
 
-    #Animación de Bonus
-    if animacionBonus:
+    #Animación de bonus
+    if animacionbonus:
 
-        Bonus.rect.y+=subir
+        bonus.rect.y+=subir
         subir+=1
 
         if subir == 8:
             
-            Bonus.image= bloqueBonus_2
-            animacionBonus=False
+            bonus.image= bloqueBonus_2
+            animacionbonus=False
             subir=-8
 
             potenciadores.add(armas)
@@ -715,14 +733,14 @@ while True:
 
     
     #Colisión del arma con el bloque bonus
-    armaBonus= pg.sprite.spritecollide(armas, bloquesBonus, False)
+    armabonus= pg.sprite.spritecollide(armas, bloquesBonus, False)
 
-    if armaBonus:
+    if armabonus:
 
         #Evitar que el sprite traspase el bloque bonus
-        if armas.rect.bottom >= Bonus.rect.top:
+        if armas.rect.bottom >= bonus.rect.top:
 
-            armas.rect.bottom = Bonus.rect.top+3
+            armas.rect.bottom = bonus.rect.top+3
             armas.caida=False
 
     else:
