@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1, sniperDerecha, sniperIzquierda, sniperSalto, ataqueIzquierda, ataqueDerecha, hongo, arma
 
-from Blocks import bloqueBonus, bloqueBonus_2, suelo
+from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
 
 from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco
 
@@ -33,6 +33,9 @@ class personaje(pg.sprite.Sprite):
         self.aumento=-30
 
         self.Saltar= False
+
+        #Controlar velocidad mientras salta
+        self.velocidad=2
 
         #Dirección mientras está quieto
         self.Dir=0
@@ -89,11 +92,10 @@ class personaje(pg.sprite.Sprite):
 
 
             #Evitar movimiento mientras dispara
-
             if self.ataque:
 
                 pass
-            
+
             
             #Caminar derecha 
             else:
@@ -145,7 +147,7 @@ class personaje(pg.sprite.Sprite):
 
                 pass
             
-
+            
             #Caminar Izquierda
             else:
                 
@@ -202,8 +204,6 @@ class personaje(pg.sprite.Sprite):
                 self.image= Quieto[self.Dir]
 
 
-
-
         #Ataque
         if Tecla[K_SPACE]:
 
@@ -237,12 +237,20 @@ class personaje(pg.sprite.Sprite):
 
         #Mover a la derecha durante el salto
         if Tecla[K_d]:
-            self.rect.x+=2
-            self.Dir=0
+
+            if self.velocidad == 0:
+
+                pass
+
+            else:
+                
+                self.rect.x+= self.velocidad
+                self.Dir=0
+                
 
         #Mover a la izquierda durante el salto
         elif Tecla[K_a]:
-            self.rect.x-=2
+            self.rect.x-= self.velocidad
             self.Dir=1
 
             
@@ -302,15 +310,25 @@ class Enemigo(pg.sprite.Sprite):
 
         super().__init__()
 
+        #Gravedad
         self.caida=3
+
+        #Dibujar cuadros
         self.Pasos=0
+
+        #Controlar personaje principal al morir el enemigo
+        self.muerte=False
+
+        #Imagen inicial
         self.image= Enemigo_1[self.Pasos]
+
+        #obtenemos el rectángulo de la imagen
         self.rect= self.image.get_rect()
 
-        #controlar rebote por velocidad
+        #controlar rebote por velocidad o velocidad del enemigo
         self.Velocidad=3
 
-        #controlar tiempo de cambio entre sprites
+        #controlar tiempo de cambio entre sprites o cuadros
         self.Contador=0
 
 
@@ -444,7 +462,7 @@ bloquesDecoracion= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
 
 
-#Instanciando Enemigo + posición
+#Instanciando Enemigo + posición 
 primerEnemigo= Enemigo()
 primerEnemigo.Posicion(700, 395)
 enemigosBasicos.add(primerEnemigo)
@@ -465,9 +483,10 @@ hongos= Potenciador(Bonus.rect.x, Bonus.rect.y -3, hongo)
 armas= Potenciador(Bonus.rect.x, Bonus.rect.y -3, arma)
 
 
-#Crear animación de subida y bajado
+#Crear animación de subida y bajada bloque bonus
 animacionBonus=False
 subir=-8
+animacion=False
 
 
 #Creando bloques en orden
@@ -488,7 +507,7 @@ cont=0
 
 for x in range(80):
     
-    bloque=Decoracion(distanciaX, distanciaY,suelo)
+    bloque=Decoracion(distanciaX, distanciaY, suelo)
     bloquesDecoracion.add(bloque)
 
     distanciaX+=25
@@ -499,6 +518,29 @@ for x in range(80):
         distanciaY+=23
         distanciaX=0
 
+
+
+#Montañas
+montania_1= Decoracion(100, 395, montaniaPequenia)
+bloquesDecoracion.add(montania_1)
+
+montania_2= Decoracion(montania_1.rect.right, 360 ,montaniaGrande)
+bloquesDecoracion.add(montania_2)
+
+#Nubes
+nube_1= Decoracion(300, 50, nubeGrande)
+bloquesDecoracion.add(nube_1)
+
+nube_2= Decoracion(500, 50, nubePequenia)
+bloquesDecoracion.add(nube_2)
+
+#Árboles
+arbol= Decoracion(300, 350, arboles)
+bloquesDecoracion.add(arbol)
+
+#Tuberías
+tuberia= Decoracion(900, 320, tuberiaBasica)
+bloquesDecoracion.add(tuberia)
 
 
 #Muerte de enemigo
@@ -515,7 +557,6 @@ caida=True
 Muerte_personajePrincipal=False
 Mover_personajePrincipal=True
 contar=False
-
 
 
 #========================== Bucle principal ===========================#
@@ -541,15 +582,16 @@ while True:
 
 
     #Dibujando sprites
+    bloquesDecoracion.draw(Ventana)
     enemigosBasicos.draw(Ventana)
+    potenciadores.draw(Ventana)
     sprites.draw(Ventana)
     bloquesBonus.draw(Ventana)
     bloquesSimples.draw(Ventana)
-    bloquesDecoracion.draw(Ventana)
-    potenciadores.draw(Ventana)
+    
 
 
-#============================= Colisiones ==================================# 
+#============================= Colisiones ==================================#
 
     #Creando colisión con enemigos + Muerte del enemigo
     
@@ -558,31 +600,46 @@ while True:
     if Colision:
 
         #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
-        if personajePrincipal.Saltar or (personajePrincipal.rect.y + 20 < primerEnemigo.rect.y):
+        if personajePrincipal.Saltar or (personajePrincipal.rect.bottom < primerEnemigo.rect.y):
 
-            personajePrincipal.aumento=-30
-            primerEnemigo.Velocidad=0
-            primerEnemigo.image=Enemigo_1[2]
-            Mover=False
-            Continua=True
-         
+            if primerEnemigo.muerte:
+
+                pass
+
+
+            else:
+
+                personajePrincipal.aumento=-30
+                primerEnemigo.Velocidad=0
+                primerEnemigo.image=Enemigo_1[2]
+                primerEnemigo.rect.bottom=450
+                Mover=False
+                Continua=True
+                primerEnemigo.muerte=True
+            
             
 
         else:
-            
-            Mover_personajePrincipal=False
-            Muerte_personajePrincipal=True
-            Contar=True
+
+            if primerEnemigo.muerte:
+
+                pass
+
+            else:
+                
+                Mover_personajePrincipal=False
+                Muerte_personajePrincipal=True
+                Contar=True
 
 
         
     if Continua:
 
-        enemigosBasicos.draw(Ventana)
         Contar=True
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
         if Contar:
+
             Contador+=1
 
             if Contador >=50:
@@ -608,21 +665,34 @@ while True:
 
                 personajePrincipal.kill()
                 Contador=0
+
         
+        
+    #Colisión del personaje con el bloque bonus
+        
+    colisionBonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
 
+    if colisionBonus:
 
-    #Colisión con bloque bonus
-    Colision_bonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
+      
+        if personajePrincipal.rect.top - 3 < Bonus.rect.bottom and (personajePrincipal.rect.right -6 >= Bonus.rect.left):
 
-    if Colision_bonus:
+            personajePrincipal.velocidad=0
 
+            
         if personajePrincipal.rect.top <= Bonus.rect.bottom:
             
             #Esto para que al colisionar baje y no continue subiendo
+            personajePrincipal.rect.y+=3
             personajePrincipal.aumento=0
 
-            animacionBonus=True
+            if not animacion:
+                
+                animacionBonus=True
 
+            else:
+
+                personajePrincipal.rect.y+=3
 
 
     #Animación de Bonus
@@ -640,10 +710,10 @@ while True:
             potenciadores.add(armas)
             armas.mover=True
             armas.caida=True
-            
+            animacion=True
 
 
-
+    
     #Colisión del arma con el bloque bonus
     armaBonus= pg.sprite.spritecollide(armas, bloquesBonus, False)
 
@@ -679,11 +749,11 @@ while True:
     
 
 
-    #Colsisión con el suelo
+    #Colsisión del personaje con el suelo
     colisionSuelo= pg.sprite.spritecollide(personajePrincipal, bloquesSimples, False)
 
     if colisionSuelo:
-
+ 
         if personajePrincipal.rect.bottom >= sueloBasico.rect.top:
 
             personajePrincipal.Saltar=False
@@ -750,8 +820,6 @@ while True:
 
         armas.caer()
         
-
-
 
 #====================== Otros ============================#
         

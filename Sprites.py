@@ -59,7 +59,7 @@ sniperSalto=[py.image.load("Imagenes/Sniper/Derecha/Salto.png"),
 
 ataqueIzquierda= [py.image.load("Imagenes/Sniper/Izquierda/Disparar/Sniper.png"),
                   py.image.load("Imagenes/Sniper/Izquierda/Disparar/Sniper1.png"),
-                  py.image.load("Imagenes/Sniper/Izquierda/Disparar/Sniper.png")]
+                  py.image.load("Imagenes/Sniper/Izquierda/Disparar/Sniper2.png")]
 
 
 ataqueDerecha= [py.image.load("Imagenes/Sniper/Derecha/Disparar/Sniper.png"),
