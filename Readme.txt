@@ -8,6 +8,9 @@ teniendo un error y es que aunque se generan dos enemigos por ejemplo, solo uno 
 cionó la respuesta del último vídeo). En fin quizás sean problemas del código, tengo pensado optimizarlo un poco más
 ya que está un poco desordenado.
 
+No he agregado la música aún por ciertos motivos, pero cuando avance más lo haré, disculpa
+ese vacío
+
 No te aburriré más con tanto texto jaja, !espero que disfrutes de la primera versión!.
 
 PD: abre el archivo Readme2

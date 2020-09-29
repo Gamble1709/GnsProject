@@ -568,7 +568,7 @@ arbol= Decoracion(300, 350, arboles)
 bloquesDecoracion.add(arbol)
 
 #Tuberías
-tuberia= Decoracion(900, 320, tuberiaBasica)
+tuberia= Bloque(900, 320, tuberiaBasica)
 bloquesDecoracion.add(tuberia)
 
 
@@ -853,6 +853,10 @@ while True:
         personajePrincipal.francotirador=True
         armas.kill()
 
+    #Colisión tubería
+    if personajePrincipal.rect.right >= tuberia.rect.left:
+
+        personajePrincipal.rect.right = tuberia.rect.left
 
 
 #========================== Movimiento de los personajes ====================================#
