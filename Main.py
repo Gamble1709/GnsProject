@@ -6,7 +6,7 @@ from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muer
 
 from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
 
-from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco
+from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
 
 import sys
 
@@ -21,7 +21,11 @@ class personaje(pg.sprite.Sprite):
         #Control de sprites
         self.pasos=0
 
+        #control del colisión con bloque bonus
         self.posX=0
+
+        self.puntuacion=0
+        self.puntuacion2=""
 
         #Activar - Desactivar Sniper
         self.francotirador= False
@@ -53,8 +57,22 @@ class personaje(pg.sprite.Sprite):
         self.rect.x=50
         self.rect.y= 375
 
+
+
+    def obtenerPuntuacion(self):
+
+        puntuacion= str(self.puntuacion)
+        lista=['0' for x in range(5)]
+        n2=-1
+        tamanio= len(puntuacion)
+
+        for x in range(tamanio):
+
+            lista[n2]= puntuacion[n2]
+            n2-=1
+
+        self.puntuacion2= "".join(lista)
         
-     
 
     def Movimiento(self):
 
@@ -436,7 +454,16 @@ class Potenciador(Bloque):
         
 #=================== Salimos de las clases ========================#
 
-        
+def mostrarTexto(ventana, fuente, texto, tamaño, color, x, y):
+
+    tipoFuente= pg.font.Font(fuente, tamaño)
+    superficie= tipoFuente.render(texto, True, color) #El True es para el 'Aliased', que hace que el texto quede liso y no pixelado
+    rectangulo= superficie.get_rect()
+    rectangulo.x=x
+    rectangulo.y=y
+    ventana.blit(superficie, rectangulo)
+    
+
 #Iniciando Pygame
 if __name__=="__main__":
 
@@ -453,7 +480,8 @@ pg.display.set_icon(Icono)
 Fps=30
 Reloj= pg.time.Clock()
 
-
+#Tiempo del juego
+tiempo= 500
 
 #grupos de Sprites
 sprites= pg.sprite.Group()
@@ -463,8 +491,7 @@ bloquesSimples= pg.sprite.Group()
 bloquesDecoracion= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
 
-
-#Instanciando Enemigo + posición 
+#Instanciación de enemigos    
 primerEnemigo= Enemigo()
 primerEnemigo.Posicion(700, 395)
 enemigosBasicos.add(primerEnemigo)
@@ -588,13 +615,23 @@ while True:
     bloquesDecoracion.draw(Ventana)
     enemigosBasicos.draw(Ventana)
     potenciadores.draw(Ventana)
-    sprites.draw(Ventana)
     bloquesBonus.draw(Ventana)
     bloquesSimples.draw(Ventana)
-    
+    sprites.draw(Ventana)
+
+
+    #Mostrando texto
+    mostrarTexto(Ventana, bertram, "TIME", 30, Blanco, 10, 10)
+    mostrarTexto(Ventana, bertram, str(int(tiempo)), 25, Blanco, 20, 40)
+    mostrarTexto(Ventana, bertram, "SCORE", 30, Blanco, 870, 10)
+    personajePrincipal.obtenerPuntuacion()
+    mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion2), 25, Blanco, 900, 40)
+
+    tiempo-=.05
 
 
 #============================= Colisiones ==================================#
+    
 
     #Creando colisión con enemigos + Muerte del enemigo
     
@@ -612,6 +649,7 @@ while True:
 
             else:
 
+                personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
                 primerEnemigo.Velocidad=0
                 primerEnemigo.image=Enemigo_1[2]
@@ -697,7 +735,6 @@ while True:
 
     if colisionbonus:
 
-        
         if personajePrincipal.rect.y <= bonus.rect.bottom and personajePrincipal.rect.x + 63 > bonus.rect.left:
             
             #Esto para que al colisionar baje y no continue subiendo
@@ -776,7 +813,7 @@ while True:
 
             personajePrincipal.Saltar=False
             personajePrincipal.aumento=-30
-            personajePrincipal.rect.bottom= sueloBasico.rect.top+3
+            personajePrincipal.rect.bottom= sueloBasico.rect.top+1
 
 
     else:
@@ -812,6 +849,7 @@ while True:
 
     if personajeArmas:
 
+        personajePrincipal.puntuacion+=1000
         personajePrincipal.francotirador=True
         armas.kill()
 
