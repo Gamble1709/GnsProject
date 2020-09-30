@@ -62,15 +62,25 @@ class personaje(pg.sprite.Sprite):
     def obtenerPuntuacion(self):
 
         puntuacion= str(self.puntuacion)
+        
+        #Creamos la lista según el puntaje máximo
         lista=['0' for x in range(5)]
-        n2=-1
+        
+        #Esto nos permite iniciar desde la última posición de la lista
+        indice=-1
+        
+        #Según el tamaño se ejecuta for n veces
         tamanio= len(puntuacion)
 
         for x in range(tamanio):
 
-            lista[n2]= puntuacion[n2]
+            #Reemplazamos el índice de la lista con el índice de la puntuación
+            lista[indice]= puntuacion[indice]
+            
+            #Restamos para ir una posición hacia atrás
             n2-=1
-
+        
+        #Convertimos la lista en string
         self.puntuacion2= "".join(lista)
         
 
