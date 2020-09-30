@@ -1,1 +1,1 @@
-Msgbox"¡Saludos!", Vbinformation," "
+Msgbox"¡Gracias por todo!", Vbinformation," "
