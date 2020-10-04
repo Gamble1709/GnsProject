@@ -78,7 +78,7 @@ class personaje(pg.sprite.Sprite):
             lista[indice]= puntuacion[indice]
             
             #Restamos para ir una posición hacia atrás
-            n2-=1
+            indice-=1
         
         #Convertimos la lista en string
         self.puntuacion2= "".join(lista)
