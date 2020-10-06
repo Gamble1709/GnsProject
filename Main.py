@@ -2,7 +2,7 @@ import pygame as pg, time
 
 from pygame.locals import *
 
-from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1, sniperDerecha, sniperIzquierda, sniperSalto, ataqueIzquierda, ataqueDerecha, hongo, arma
+from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1, sniperDerecha, sniperIzquierda, sniperSalto, ataqueIzquierda, ataqueDerecha, hongo, arma, proyectil
 
 from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
 
@@ -35,6 +35,10 @@ class personaje(pg.sprite.Sprite):
         self.numeroImagenes=0
         self.tiempo=0
 
+        #Cuando se crea un proyectil se activa
+        self.generar=False
+        self.numero=0
+
         #Controla el alto del salto
         self.aumento=-30
 
@@ -46,6 +50,12 @@ class personaje(pg.sprite.Sprite):
         #Dirección mientras está quieto
         self.Dir=0
         self.Estatico= Quieto[0]
+
+        #Controlar muerte
+        self.muerte=False
+        self.continuar=False
+        self.contador=False
+        self.conteo=0
         
         #Cargar imagen
         self.image= Quieto[0]
@@ -83,6 +93,7 @@ class personaje(pg.sprite.Sprite):
         #Convertimos la lista en string
         self.puntuacion2= "".join(lista)
         
+
 
     def Movimiento(self):
 
@@ -238,10 +249,11 @@ class personaje(pg.sprite.Sprite):
         if Tecla[K_SPACE]:
 
             if self.francotirador:
-
+        
                 #Activamos ataque
                 self.ataque=True
-
+                self.generar=True
+                
 
         
     def salto(self):
@@ -331,7 +343,52 @@ class personaje(pg.sprite.Sprite):
             
 
         
+
+
+class Proyectil(pg.sprite.Sprite):
+
+    def __init__(self, imagen, x, y):
+
+        super().__init__()
+
+        self.image= imagen
+        self.rect= self.image.get_rect()
+        self.rect.x=x
+        self.rect.y=y
+
+        #Para mover el proyectil
+        self.conteo=True
+        self.dir=0
+
+
+    def mover(self):
+        
+        if self.conteo:
+
+            if personajePrincipal.Dir == 0:
+                
+                self.dir=10
+
+            else:
+
+                self.image= proyectil[1]
+                self.dir=-10
+
+            self.conteo=False
+
+
+        self.rect.x+=self.dir
     
+
+    def comprobarPosicion(self):
+
+        if nuevoProyectil.rect.x > 950 or nuevoProyectil.rect.x < 0:
+
+            nuevoProyectil.kill()
+            personajePrincipal.generar=False
+            personajePrincipal.numero=0
+
+
 
 #Clase para los enemigos
 class Enemigo(pg.sprite.Sprite):
@@ -342,12 +399,16 @@ class Enemigo(pg.sprite.Sprite):
 
         #Gravedad
         self.caida=3
+        self.caer=True
 
         #Dibujar cuadros
         self.Pasos=0
 
-        #Controlar personaje principal al morir el enemigo
+        #Controlar muerte del enemigo
         self.muerte=False
+        self.continua=False
+        self.contador= False
+        self.conteo=0
 
         #Imagen inicial
         self.image= Enemigo_1[self.Pasos]
@@ -500,6 +561,7 @@ bloquesBonus= pg.sprite.Group()
 bloquesSimples= pg.sprite.Group()
 bloquesDecoracion= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
+proyectiles= pg.sprite.Group()
 
 #Instanciación de enemigos    
 primerEnemigo= Enemigo()
@@ -510,19 +572,17 @@ enemigosBasicos.add(primerEnemigo)
 personajePrincipal=personaje()
 sprites.add(personajePrincipal)
 
-
 #Instanciando Bloques
 bonus= Bloque(600, 275, bloqueBonus)
 bloquesBonus.add(bonus)
-
 
 #Instanciación de los potenciadores
 
 hongos= Potenciador(bonus.rect.x, bonus.rect.y -3, hongo)
 armas= Potenciador(bonus.rect.x, bonus.rect.y -3, arma)
 
-
-#Crear animación de subida y bajada bloque bonus
+    
+#Crear animación de subida y bajada bloque bonus (Pronto se pondrá en la clase para borrar este espacio)
 animacionbonus=False
 subir=-8
 animacion=False
@@ -583,18 +643,9 @@ bloquesDecoracion.add(tuberia)
 
 
 #Muerte de enemigo
-Contar=False
-Contador=0
-Continua=False
-Mover=True
 Bajar=True
 
-#Gravedad del enemigo
-caida=True
-
 #Muerte del personajePrincipal principal
-Muerte_personajePrincipal=False
-Mover_personajePrincipal=True
 contar=False
 
 
@@ -619,12 +670,14 @@ while True:
     bloquesDecoracion.update()
     potenciadores.update()
     bloquesBonus.update()
+    proyectiles.update()
 
 
     #Dibujando sprites
     bloquesDecoracion.draw(Ventana)
-    enemigosBasicos.draw(Ventana)
     potenciadores.draw(Ventana)
+    proyectiles.draw(Ventana)
+    enemigosBasicos.draw(Ventana)
     bloquesBonus.draw(Ventana)
     bloquesSimples.draw(Ventana)
     sprites.draw(Ventana)
@@ -638,6 +691,16 @@ while True:
     mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion2), 25, Blanco, 900, 40)
 
     tiempo-=.05
+    
+    if personajePrincipal.generar:
+        
+        if personajePrincipal.numero == 0:
+
+            nuevoProyectil= Proyectil(proyectil[0], personajePrincipal.rect.right, (personajePrincipal.rect.centery + 5))
+            proyectiles.add(nuevoProyectil)
+            personajePrincipal.numero+=1
+
+        nuevoProyectil.mover()
 
 
 #============================= Colisiones ==================================#
@@ -664,8 +727,8 @@ while True:
                 primerEnemigo.Velocidad=0
                 primerEnemigo.image=Enemigo_1[2]
                 primerEnemigo.rect.bottom=450
-                Mover=False
-                Continua=True
+                primerEnemigo.mover=False
+                primerEnemigo.continua=True
                 primerEnemigo.muerte=True
             
             
@@ -678,48 +741,47 @@ while True:
 
             else:
                 
-                Mover_personajePrincipal=False
-                Muerte_personajePrincipal=True
-                Contar=True
+                personajePrincipal.muerte=True
+                personajePrincipal.continuar=True
 
 
         
-    if Continua:
+    if primerEnemigo.continua:
 
-        Contar=True
+        primerEnemigo.contador=True
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if Contar:
+        if primerEnemigo.contador:
 
-            Contador+=1
+            primerEnemigo.conteo+=1
 
-            if Contador >=50:
+            if primerEnemigo.conteo >= 50:
                 
                 primerEnemigo.kill()
-                Contador=0
-                Continua=False
+                primerEnemigo.conteo=0
+                primerEnemigo.continua=False
 
 
 
     #Mostrar muerte, aunque colisione con un objeto
-    if Muerte_personajePrincipal or (Muerte_personajePrincipal and colisionSuelo):
+    if personajePrincipal.muerte or (personajePrincipal.muerte and colisionSuelo):
 
         personajePrincipal.image=Muerte
         sprites.draw(Ventana)
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if Contar:
+        if personajePrincipal.continuar:
             
-            Contador+=1
+            personajePrincipal.conteo+=1
 
-            if Contador >=50:
+            if personajePrincipal.conteo >= 50:
 
                 personajePrincipal.kill()
-                Contador=0
+                personajePrincipal.conteo=0
 
         
         
-    #Colisión del personaje con el bloque bonus
+    #Colisión del personaje con el bloque bonus (left y right)
 
     if (personajePrincipal.rect.x + 63 >= bonus.rect.left and personajePrincipal.rect.top <= bonus.rect.bottom -3)\
        and personajePrincipal.rect.x < bonus.rect.right:
@@ -740,6 +802,8 @@ while True:
 
         
         
+
+    #Colisión con bloque Bonus (bottom)
     colisionbonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
 
 
@@ -788,11 +852,10 @@ while True:
         if armas.rect.bottom >= bonus.rect.top:
 
             armas.rect.bottom = bonus.rect.top+3
-            armas.caida=False
+            armas.caida=False 
 
-    else:
-
-        armas.caida=True
+        else: 
+            armas.caida=True
 
 
 
@@ -845,7 +908,7 @@ while True:
         if primerEnemigo.rect.bottom >= sueloBasico.rect.top:
 
             caida=False
-            primerEnemigo.rect.bottom = sueloBasico.rect.top+3
+            primerEnemigo.rect.bottom = sueloBasico.rect.top+1
 
 
     else:
@@ -863,6 +926,26 @@ while True:
         personajePrincipal.francotirador=True
         armas.kill()
 
+
+    #Colisión del enemigo con proyectil
+    
+    if personajePrincipal.generar:
+
+        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, enemigosBasicos, False)
+
+        if colisionProyectil:
+
+            nuevoProyectil.kill() 
+            personajePrincipal.generar=False
+            primerEnemigo.kill()
+
+
+    #Eliminar proyectil al salir de la pantalla
+    if personajePrincipal.generar:
+
+        nuevoProyectil.comprobarPosicion()
+
+    
     #Colisión tubería
     if personajePrincipal.rect.right >= tuberia.rect.left:
 
@@ -874,10 +957,10 @@ while True:
     
     #Mover personajePrincipal y enemigos
 
-    if Mover_personajePrincipal:
+    if not personajePrincipal.muerte:
         personajePrincipal.Movimiento()
 
-    if Mover:
+    if not primerEnemigo.muerte:
         primerEnemigo.Mover()
 
 
@@ -899,7 +982,7 @@ while True:
 
 
     #Gravedad del enemigo
-    if caida:
+    if primerEnemigo.caer:
         primerEnemigo.Caer()
 
         
@@ -913,7 +996,7 @@ while True:
     if personajePrincipal.ataque:
 
         personajePrincipal.disparar()
-        
+
 
     Reloj.tick(Fps)
     pg.display.update()
