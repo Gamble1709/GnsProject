@@ -2,7 +2,7 @@ import pygame as pg, time
 
 from pygame.locals import *
 
-from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1, sniperDerecha, sniperIzquierda, sniperSalto, ataqueIzquierda, ataqueDerecha, hongo, arma, proyectil
+from Sprites import Camina_Derecha, Camina_Izquierda,Saltos, Icono, Quieto, Muerte, Enemigo_1, mago, sniperDerecha, sniperIzquierda, sniperSalto, ataqueIzquierda, ataqueDerecha, hongo, arma, proyectil
 
 from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
 
@@ -65,7 +65,7 @@ class personaje(pg.sprite.Sprite):
         
         #Coordenadas del rectangulo
         self.rect.x=50
-        self.rect.y= 375
+        self.rect.y= 379
 
 
 
@@ -390,7 +390,7 @@ class Proyectil(pg.sprite.Sprite):
 
 
 
-#Clase para los enemigos
+#Clase para los enemigos básicos
 class Enemigo(pg.sprite.Sprite):
 
     def __init__(self):
@@ -460,6 +460,72 @@ class Enemigo(pg.sprite.Sprite):
         self.rect.y+= self.caida
 
 
+
+
+class OtroEnemigo(pg.sprite.Sprite):
+
+    def __init__(self, imagen, x, y, cuadros):
+
+        super().__init__()
+
+        self.image= imagen[0]
+        self.rect= self.image.get_rect()
+        self.rect.x= x
+        self.rect.y= y
+
+        #Control de número de imagenes (ya que se usa una lista) 
+        self.cuadros= cuadros
+
+        self.mover=False
+
+        #Control de ataque
+        self.conteo=0
+        self.bandera=False
+
+        #Variable de prueba
+        self.tiempo=0
+        self.accion=False
+
+        #Dependiendo el enemigo, ajustamos su moviento
+        self.x= 0
+        self.y= 0
+
+
+    def moverX(self):
+        
+        self.rect.x+=3
+
+
+    def moverY(self, direccion):
+
+        if direccion == 0:
+
+            self.rect.y-= 3
+
+        else:
+
+            self.rect.y+=3
+    
+
+    def atacar(self):
+
+        if self.conteo >= 30.0 and self.conteo < 60:
+
+            self.image= mago[1]
+
+        elif self.conteo > 60 and self.conteo < 100:
+            
+            self.rect.x = 885 
+            self.image= mago[2]
+
+        
+        elif self.conteo > 100:
+
+            self.conteo=0
+            self.mover= False
+            self.bandera= True
+
+            print(True)
 
         
 
@@ -557,16 +623,24 @@ tiempo= 500
 #grupos de Sprites
 sprites= pg.sprite.Group()
 enemigosBasicos= pg.sprite.Group()
+magos= pg.sprite.Group()
 bloquesBonus= pg.sprite.Group()
 bloquesSimples= pg.sprite.Group()
 bloquesDecoracion= pg.sprite.Group()
+tuberias= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
 proyectiles= pg.sprite.Group()
 
 #Instanciación de enemigos    
-primerEnemigo= Enemigo()
-primerEnemigo.Posicion(700, 395)
-enemigosBasicos.add(primerEnemigo)
+nuevoEnemigo= Enemigo()
+nuevoEnemigo.Posicion(700, 395)
+enemigosBasicos.add(nuevoEnemigo)
+
+
+#Magos
+nuevoMago= OtroEnemigo(mago, 905, 320, 3)
+magos.add(nuevoMago)
+
 
 #Instanciando personajePrincipalPrincipal principal
 personajePrincipal=personaje()
@@ -619,6 +693,10 @@ for x in range(80):
 
 
 
+#Tuberías
+tuberia= Bloque(900, 320, tuberiaBasica)
+tuberias.add(tuberia)
+
 #Montañas
 montania_1= Decoracion(100, 395, montaniaPequenia)
 bloquesDecoracion.add(montania_1)
@@ -636,17 +714,6 @@ bloquesDecoracion.add(nube_2)
 #Árboles
 arbol= Decoracion(300, 350, arboles)
 bloquesDecoracion.add(arbol)
-
-#Tuberías
-tuberia= Bloque(900, 320, tuberiaBasica)
-bloquesDecoracion.add(tuberia)
-
-
-#Muerte de enemigo
-Bajar=True
-
-#Muerte del personajePrincipal principal
-contar=False
 
 
 #========================== Bucle principal ===========================#
@@ -670,7 +737,9 @@ while True:
     bloquesDecoracion.update()
     potenciadores.update()
     bloquesBonus.update()
+    tuberias.update()
     proyectiles.update()
+    magos.update()
 
 
     #Dibujando sprites
@@ -678,7 +747,9 @@ while True:
     potenciadores.draw(Ventana)
     proyectiles.draw(Ventana)
     enemigosBasicos.draw(Ventana)
+    magos.draw(Ventana)
     bloquesBonus.draw(Ventana)
+    tuberias.draw(Ventana)
     bloquesSimples.draw(Ventana)
     sprites.draw(Ventana)
 
@@ -692,6 +763,10 @@ while True:
 
     tiempo-=.05
     
+
+#======================================================================================================
+
+    #Generando proyectiles
     if personajePrincipal.generar:
         
         if personajePrincipal.numero == 0:
@@ -701,6 +776,55 @@ while True:
             personajePrincipal.numero+=1
 
         nuevoProyectil.mover()
+
+
+    
+    if personajePrincipal.rect.right >= (tuberia.rect.left - 200):
+
+        if not nuevoMago.mover and nuevoMago.rect.y == 320:
+
+            print(tiempo, nuevoMago.tiempo)
+
+            if nuevoMago.accion and nuevoMago.tiempo == int(tiempo):
+
+                nuevoMago.mover= True
+                nuevoMago.tiempo=0
+                nuevoMago.accion=False
+
+            elif nuevoMago.accion:
+
+                pass
+
+            else:
+
+                nuevoMago.mover= True
+
+
+    if nuevoMago.mover:
+
+        if nuevoMago.rect.y >= 230:
+
+            nuevoMago.moverY(0)
+        
+        else:
+
+           nuevoMago.atacar()
+           nuevoMago.conteo+=1
+
+    else:
+
+        if nuevoMago.bandera:
+
+            nuevoMago.rect.x = 905
+            nuevoMago.image= mago[0]
+
+            nuevoMago.moverY(1)
+
+            if nuevoMago.rect.y == 320:
+
+                nuevoMago.bandera= False
+                nuevoMago.tiempo= (int(tiempo) - 5)
+                nuevoMago.accion= True
 
 
 #============================= Colisiones ==================================#
@@ -713,9 +837,9 @@ while True:
     if Colision:
 
         #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
-        if personajePrincipal.Saltar or (personajePrincipal.rect.bottom < primerEnemigo.rect.y):
+        if personajePrincipal.Saltar or (personajePrincipal.rect.bottom < nuevoEnemigo.rect.y):
 
-            if primerEnemigo.muerte:
+            if nuevoEnemigo.muerte:
 
                 pass
 
@@ -724,18 +848,18 @@ while True:
 
                 personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
-                primerEnemigo.Velocidad=0
-                primerEnemigo.image=Enemigo_1[2]
-                primerEnemigo.rect.bottom=450
-                primerEnemigo.mover=False
-                primerEnemigo.continua=True
-                primerEnemigo.muerte=True
+                nuevoEnemigo.Velocidad=0
+                nuevoEnemigo.image=Enemigo_1[2]
+                nuevoEnemigo.rect.bottom=450
+                nuevoEnemigo.mover=False
+                nuevoEnemigo.continua=True
+                nuevoEnemigo.muerte=True
             
             
 
         else:
 
-            if primerEnemigo.muerte:
+            if nuevoEnemigo.muerte:
 
                 pass
 
@@ -746,20 +870,20 @@ while True:
 
 
         
-    if primerEnemigo.continua:
+    if nuevoEnemigo.continua:
 
-        primerEnemigo.contador=True
+        nuevoEnemigo.contador=True
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if primerEnemigo.contador:
+        if nuevoEnemigo.contador:
 
-            primerEnemigo.conteo+=1
+            nuevoEnemigo.conteo+=1
 
-            if primerEnemigo.conteo >= 50:
+            if nuevoEnemigo.conteo >= 50:
                 
-                primerEnemigo.kill()
-                primerEnemigo.conteo=0
-                primerEnemigo.continua=False
+                nuevoEnemigo.kill()
+                nuevoEnemigo.conteo=0
+                nuevoEnemigo.continua=False
 
 
 
@@ -889,26 +1013,26 @@ while True:
             personajePrincipal.rect.bottom= sueloBasico.rect.top+1
 
 
-    else:
-
         #Si el personaje no está saltando ni hay colisión con el suelo, significa que está cayento
         
-        if not personajePrincipal.Saltar:
+        else:
+            
+            if not personajePrincipal.Saltar:
 
-            personajePrincipal.rect.y+=5
+                personajePrincipal.rect.y+=5
         
 
 
     #Colisión del enemigo con el suelo
             
-    colisionSueloEnemigo= pg.sprite.spritecollide(primerEnemigo, bloquesSimples, False)
+    colisionSueloEnemigo= pg.sprite.spritecollide(nuevoEnemigo, bloquesSimples, False)
 
     if colisionSueloEnemigo:
         
-        if primerEnemigo.rect.bottom >= sueloBasico.rect.top:
+        if nuevoEnemigo.rect.bottom >= sueloBasico.rect.top:
 
             caida=False
-            primerEnemigo.rect.bottom = sueloBasico.rect.top+1
+            nuevoEnemigo.rect.bottom = sueloBasico.rect.top+1
 
 
     else:
@@ -937,7 +1061,7 @@ while True:
 
             nuevoProyectil.kill() 
             personajePrincipal.generar=False
-            primerEnemigo.kill()
+            nuevoEnemigo.kill()
 
 
     #Eliminar proyectil al salir de la pantalla
@@ -946,11 +1070,28 @@ while True:
         nuevoProyectil.comprobarPosicion()
 
     
+
     #Colisión tubería
-    if personajePrincipal.rect.right >= tuberia.rect.left:
 
-        personajePrincipal.rect.right = tuberia.rect.left
+    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, tuberias, False)
 
+    if colisionTuberia:
+
+        #Comprobamos si está encima de la tubería
+        if personajePrincipal.rect.bottom >= tuberia.rect.top and (personajePrincipal.rect.centery - 10) < tuberia.rect.top:
+
+            personajePrincipal.rect.bottom = tuberia.rect.top +1
+            personajePrincipal.Saltar=False
+            personajePrincipal.aumento= -30
+
+        
+        #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
+        else:
+            
+            if personajePrincipal.rect.right >= tuberia.rect.left:
+
+                 personajePrincipal.rect.right= tuberia.rect.left
+        
 
 #========================== Movimiento de los personajes ====================================#
         
@@ -960,8 +1101,8 @@ while True:
     if not personajePrincipal.muerte:
         personajePrincipal.Movimiento()
 
-    if not primerEnemigo.muerte:
-        primerEnemigo.Mover()
+    if not nuevoEnemigo.muerte:
+        nuevoEnemigo.Mover()
 
 
     #Movimiento de potenciadores
@@ -977,13 +1118,13 @@ while True:
 #====================== Otros ============================#
         
     #Morir al salir de la pantalla
-    if primerEnemigo.rect.x<=0:
-        primerEnemigo.kill()
+    if nuevoEnemigo.rect.x<=0:
+        nuevoEnemigo.kill()
 
 
     #Gravedad del enemigo
-    if primerEnemigo.caer:
-        primerEnemigo.Caer()
+    if nuevoEnemigo.caer:
+        nuevoEnemigo.Caer()
 
         
     #Salto

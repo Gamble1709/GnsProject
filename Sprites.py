@@ -83,4 +83,7 @@ Enemigo_1=[py.image.load("Imagenes/Enemigos/Enemy_1.png"),
            py.image.load("Imagenes/Enemigos/Muerte.png")]
         
 
-    
+mago= [py.image.load("Imagenes/Enemigos/Mago/Mago1.png"),
+        py.image.load("Imagenes/Enemigos/Mago/Mago2.png"),
+        py.image.load("Imagenes/Enemigos/Mago/Mago3.png"),]
+
