@@ -24,8 +24,8 @@ class personaje(pg.sprite.Sprite):
         #control del colisión con bloque bonus
         self.posX=0
 
+	#Puntuación
         self.puntuacion=0
-        self.puntuacion2=""
 
         #Activar - Desactivar Sniper
         self.francotirador= False
@@ -54,9 +54,9 @@ class personaje(pg.sprite.Sprite):
         #Controlar muerte
         self.muerte=False
         self.continuar=False
-        self.contador=False
-        self.conteo=0
-        
+       	self.retraso=0
+    	self.ahora=0
+ 
         #Cargar imagen
         self.image= Quieto[0]
 
@@ -66,33 +66,6 @@ class personaje(pg.sprite.Sprite):
         #Coordenadas del rectangulo
         self.rect.x=50
         self.rect.y= 379
-
-
-
-    def obtenerPuntuacion(self):
-
-        puntuacion= str(self.puntuacion)
-        
-        #Creamos la lista según el puntaje máximo
-        lista=['0' for x in range(5)]
-        
-        #Esto nos permite iniciar desde la última posición de la lista
-        indice=-1
-        
-        #Según el tamaño se ejecuta for n veces
-        tamanio= len(puntuacion)
-
-        for x in range(tamanio):
-
-            #Reemplazamos el índice de la lista con el índice de la puntuación
-            lista[indice]= puntuacion[indice]
-            
-            #Restamos para ir una posición hacia atrás
-            indice-=1
-        
-        #Convertimos la lista en string
-        self.puntuacion2= "".join(lista)
-        
 
 
     def Movimiento(self):
@@ -758,8 +731,7 @@ while True:
     mostrarTexto(Ventana, bertram, "TIME", 30, Blanco, 10, 10)
     mostrarTexto(Ventana, bertram, str(int(tiempo)), 25, Blanco, 20, 40)
     mostrarTexto(Ventana, bertram, "SCORE", 30, Blanco, 870, 10)
-    personajePrincipal.obtenerPuntuacion()
-    mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion2), 25, Blanco, 900, 40)
+    mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion).zfill(5), 25, Blanco, 900, 40)
 
     tiempo-=.05
     
@@ -782,8 +754,6 @@ while True:
     if personajePrincipal.rect.right >= (tuberia.rect.left - 200):
 
         if not nuevoMago.mover and nuevoMago.rect.y == 320:
-
-            print(tiempo, nuevoMago.tiempo)
 
             if nuevoMago.accion and nuevoMago.tiempo == int(tiempo):
 
@@ -867,7 +837,8 @@ while True:
                 
                 personajePrincipal.muerte=True
                 personajePrincipal.continuar=True
-
+		personajePrincipal.ahora= pg.Time.get_ticks()
+		personajePrincipal.retraso = personajePrincipal.ahora + 2000
 
         
     if nuevoEnemigo.continua:
@@ -896,9 +867,9 @@ while True:
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
         if personajePrincipal.continuar:
             
-            personajePrincipal.conteo+=1
+            personajePrincipal.ahora+=100
 
-            if personajePrincipal.conteo >= 50:
+            if personajePrincipal.ahora ==  personajePrincipal.retraso:
 
                 personajePrincipal.kill()
                 personajePrincipal.conteo=0
