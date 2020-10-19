@@ -24,7 +24,7 @@ class personaje(pg.sprite.Sprite):
         #control del colisión con bloque bonus
         self.posX=0
 
-	#Puntuación
+        #Puntuación
         self.puntuacion=0
 
         #Activar - Desactivar Sniper
@@ -53,9 +53,6 @@ class personaje(pg.sprite.Sprite):
 
         #Controlar muerte
         self.muerte=False
-        self.continuar=False
-       	self.retraso=0
-    	self.ahora=0
  
         #Cargar imagen
         self.image= Quieto[0]
@@ -220,9 +217,13 @@ class personaje(pg.sprite.Sprite):
 
         #Ataque
         if Tecla[K_SPACE]:
+            
+            if self.numero != 0:
 
-            if self.francotirador:
-        
+                pass
+
+            elif self.francotirador:
+            
                 #Activamos ataque
                 self.ataque=True
                 self.generar=True
@@ -380,8 +381,8 @@ class Enemigo(pg.sprite.Sprite):
         #Controlar muerte del enemigo
         self.muerte=False
         self.continua=False
-        self.contador= False
-        self.conteo=0
+        self.retraso=0
+        self.ahora=0
 
         #Imagen inicial
         self.image= Enemigo_1[self.Pasos]
@@ -750,7 +751,7 @@ while True:
         nuevoProyectil.mover()
 
 
-    
+    #Movimiento y ataque del mago    
     if personajePrincipal.rect.right >= (tuberia.rect.left - 200):
 
         if not nuevoMago.mover and nuevoMago.rect.y == 320:
@@ -818,13 +819,12 @@ while True:
 
                 personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
-                nuevoEnemigo.Velocidad=0
                 nuevoEnemigo.image=Enemigo_1[2]
                 nuevoEnemigo.rect.bottom=450
-                nuevoEnemigo.mover=False
                 nuevoEnemigo.continua=True
                 nuevoEnemigo.muerte=True
-            
+                nuevoEnemigo.ahora= pg.time.get_ticks()
+                nuevoEnemigo.retraso= nuevoEnemigo.ahora + 2000 
             
 
         else:
@@ -837,25 +837,20 @@ while True:
                 
                 personajePrincipal.muerte=True
                 personajePrincipal.continuar=True
-		personajePrincipal.ahora= pg.Time.get_ticks()
-		personajePrincipal.retraso = personajePrincipal.ahora + 2000
+                personajePrincipal.ahora=pg.time.get_ticks()
+                personajePrincipal.retraso=personajePrincipal.ahora + 2000
 
         
-    if nuevoEnemigo.continua:
-
-        nuevoEnemigo.contador=True
+    if nuevoEnemigo.muerte:
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if nuevoEnemigo.contador:
-
-            nuevoEnemigo.conteo+=1
-
-            if nuevoEnemigo.conteo >= 50:
+        if nuevoEnemigo.ahora >= nuevoEnemigo.retraso:
                 
-                nuevoEnemigo.kill()
-                nuevoEnemigo.conteo=0
-                nuevoEnemigo.continua=False
+            nuevoEnemigo.kill()
 
+        else:
+
+            nuevoEnemigo.ahora+=50
 
 
     #Mostrar muerte, aunque colisione con un objeto
