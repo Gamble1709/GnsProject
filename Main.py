@@ -314,7 +314,6 @@ class personaje(pg.sprite.Sprite):
 
             self.numeroImagenes+=1
             self.tiempo=0
-            
 
         
 
@@ -367,7 +366,7 @@ class Proyectil(pg.sprite.Sprite):
 #Clase para los enemigos básicos
 class Enemigo(pg.sprite.Sprite):
 
-    def __init__(self):
+    def __init__(self,imagen,maxPasos,x,y):
 
         super().__init__()
 
@@ -377,6 +376,7 @@ class Enemigo(pg.sprite.Sprite):
 
         #Dibujar cuadros
         self.Pasos=0
+        self.maximosPasos= maxPasos
 
         #Controlar muerte del enemigo
         self.muerte=False
@@ -385,10 +385,15 @@ class Enemigo(pg.sprite.Sprite):
         self.ahora=0
 
         #Imagen inicial
-        self.image= Enemigo_1[self.Pasos]
+        self.imagen= imagen
+        self.image= imagen[self.Pasos]
 
         #obtenemos el rectángulo de la imagen
         self.rect= self.image.get_rect()
+
+        #Posición
+        self.rect.x =x
+        self.rect.y =y
 
         #controlar rebote por velocidad o velocidad del enemigo
         self.Velocidad=3
@@ -396,17 +401,12 @@ class Enemigo(pg.sprite.Sprite):
         #controlar tiempo de cambio entre sprites o cuadros
         self.Contador=0
 
-
-    def Posicion(self, X, Y):
-
-        self.rect.x =X
-        self.rect.y =Y
-
+        
 
     def Mover(self):
         
         self.rect.x-= self.Velocidad
-        self.image= Enemigo_1[self.Pasos]
+        self.image= self.imagen[self.Pasos]
 
         self.Contador+=1
 
@@ -414,7 +414,7 @@ class Enemigo(pg.sprite.Sprite):
             self.Pasos+=1
             self.Contador=0
 
-        if self.Pasos >1:
+        if self.Pasos > self.maximosPasos:
             self.Pasos=0
 
         """Si se desea usar rebote
@@ -436,19 +436,14 @@ class Enemigo(pg.sprite.Sprite):
 
 
 
-class OtroEnemigo(pg.sprite.Sprite):
+class Mago(Enemigo):
 
-    def __init__(self, imagen, x, y, cuadros):
+    def __init__(self, imagen, maxPasos, x, y):
 
-        super().__init__()
+        
+        super().__init__(imagen, maxPasos, x, y)
 
-        self.image= imagen[0]
-        self.rect= self.image.get_rect()
-        self.rect.x= x
-        self.rect.y= y
-
-        #Control de número de imagenes (ya que se usa una lista) 
-        self.cuadros= cuadros
+        self.imagen= imagen
 
         self.mover=False
 
@@ -459,10 +454,6 @@ class OtroEnemigo(pg.sprite.Sprite):
         #Variable de prueba
         self.tiempo=0
         self.accion=False
-
-        #Dependiendo el enemigo, ajustamos su moviento
-        self.x= 0
-        self.y= 0
 
 
     def moverX(self):
@@ -485,12 +476,12 @@ class OtroEnemigo(pg.sprite.Sprite):
 
         if self.conteo >= 30.0 and self.conteo < 60:
 
-            self.image= mago[1]
+            self.image= self.imagen[1]
 
         elif self.conteo > 60 and self.conteo < 100:
             
             self.rect.x = 885 
-            self.image= mago[2]
+            self.image= self.imagen[2]
 
         
         elif self.conteo > 100:
@@ -498,8 +489,6 @@ class OtroEnemigo(pg.sprite.Sprite):
             self.conteo=0
             self.mover= False
             self.bandera= True
-
-            print(True)
 
         
 
@@ -606,13 +595,12 @@ potenciadores= pg.sprite.Group()
 proyectiles= pg.sprite.Group()
 
 #Instanciación de enemigos    
-nuevoEnemigo= Enemigo()
-nuevoEnemigo.Posicion(700, 395)
+nuevoEnemigo= Enemigo(Enemigo_1, 1,700, 395)
 enemigosBasicos.add(nuevoEnemigo)
 
 
 #Magos
-nuevoMago= OtroEnemigo(mago, 905, 320, 3)
+nuevoMago= Mago(mago, 0, 905, 320)
 magos.add(nuevoMago)
 
 
