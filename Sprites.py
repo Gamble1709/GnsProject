@@ -1,31 +1,35 @@
-import pygame as py
+import pygame as py, os
 
 from pygame.locals import *
 
+#Directorios
+carpetaPrincipal= os.path.dirname(__file__)
+print(carpetaPrincipal)
+carpetaJugador= os.path.join(carpetaPrincipal, "Imagenes/Personaje")
 
 #ícono del juego
 Icono= py.image.load("Imagenes/Icono.png")
 
 
-
-Camina_Derecha=[py.image.load("Imagenes/Personaje/Derecha/Mario.png"),
-                py.image.load("Imagenes/Personaje/Derecha/Mario-1.png"),
-                py.image.load("Imagenes/Personaje/Derecha/Mario-2.png"),
-                py.image.load("Imagenes/Personaje/Derecha/Mario-3.png"),
-                py.image.load("Imagenes/Personaje/Derecha/Mario-4.png")]
-
-
-
-Camina_Izquierda=[py.image.load("Imagenes/Personaje/Izquierda/Mario2.png"),
-                py.image.load("Imagenes/Personaje/Izquierda/Mario3.png"),
-                py.image.load("Imagenes/Personaje/Izquierda/Mario4.png"),
-                py.image.load("Imagenes/Personaje/Izquierda/Mario5.png"),
-                py.image.load("Imagenes/Personaje/Izquierda/Mario6.png")]
+Camina_Derecha=[py.image.load(os.path.join(carpetaJugador, "Derecha/Mario.png")),
+                py.image.load(os.path.join(carpetaJugador, "Derecha/Mario-1.png")),
+                py.image.load(os.path.join(carpetaJugador, "Derecha/Mario-2.png")),
+                py.image.load(os.path.join(carpetaJugador, "Derecha/Mario-3.png")),
+                py.image.load(os.path.join(carpetaJugador, "Derecha/Mario-4.png"))]
 
 
 
-Saltos= [py.image.load("Imagenes/Personaje/Derecha/Salto.png"),
-         py.image.load("Imagenes/Personaje/Izquierda/Salto.png")]
+Camina_Izquierda=[py.image.load(os.path.join(carpetaJugador, "Izquierda/Mario2.png")),
+                py.image.load(os.path.join(carpetaJugador, "Izquierda/Mario3.png")),
+                py.image.load(os.path.join(carpetaJugador, "Izquierda/Mario4.png")),
+                py.image.load(os.path.join(carpetaJugador, "Izquierda/Mario5.png")),
+                py.image.load(os.path.join(carpetaJugador, "Izquierda/Mario6.png"))]
+
+
+
+Saltos= [py.image.load(os.path.join(carpetaJugador, "Derecha/Salto.png")),
+         py.image.load(os.path.join(carpetaJugador, "Izquierda/Salto.png"))]
+         
 
 
 

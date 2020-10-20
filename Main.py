@@ -821,7 +821,6 @@ while True:
                 personajePrincipal.aumento=-30
                 nuevoEnemigo.image=Enemigo_1[2]
                 nuevoEnemigo.rect.bottom=450
-                nuevoEnemigo.continua=True
                 nuevoEnemigo.muerte=True
                 nuevoEnemigo.ahora= pg.time.get_ticks()
                 nuevoEnemigo.retraso= nuevoEnemigo.ahora + 2000 
@@ -836,7 +835,6 @@ while True:
             else:
                 
                 personajePrincipal.muerte=True
-                personajePrincipal.continuar=True
                 personajePrincipal.ahora=pg.time.get_ticks()
                 personajePrincipal.retraso=personajePrincipal.ahora + 2000
 
@@ -860,7 +858,7 @@ while True:
         sprites.draw(Ventana)
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if personajePrincipal.continuar:
+        if personajePrincipal.muerte:
             
             personajePrincipal.ahora+=100
 
