@@ -6,6 +6,9 @@ from pygame.locals import *
 carpetaPrincipal= os.path.dirname(__file__)
 carpetaJugador= os.path.join(carpetaPrincipal, "Imagenes/Personaje")
 sniper= os.path.join(carpetaJugador, "Sniper")
+carpetaGoomba= os.path.join(carpetaPrincipal, "Imagenes/Enemigos/Goomba")
+carpetaMago= os.path.join(carpetaPrincipal, "Imagenes/Enemigos/Mago")
+
 
 #ícono del juego
 Icono= py.image.load("Imagenes/Icono.png")
@@ -69,8 +72,6 @@ movimiento["Quieto"].append(py.image.load(os.path.join(carpetaJugador,"Sniper/Iz
 Muerte=py.image.load("Imagenes/Personaje/Muerte.png")
 
 
-#=============== Sprites sniper =====================
-
 
 
 #Imágenes del proyectil
@@ -85,12 +86,13 @@ arma= py.image.load("Imagenes/Potenciadores/Arma.png")
 
 #=========================== Sprites Enemigos ===========================
 
-Enemigo_1=[py.image.load("Imagenes/Enemigos/Enemy_1.png"),
-           py.image.load("Imagenes/Enemigos/Enemy_2.png"),
-           py.image.load("Imagenes/Enemigos/Muerte.png")]
-        
+enemigos= {"Goomba": [], "Mago": []}
 
-mago= [py.image.load("Imagenes/Enemigos/Mago/Mago1.png"),
-        py.image.load("Imagenes/Enemigos/Mago/Mago2.png"),
-        py.image.load("Imagenes/Enemigos/Mago/Mago3.png"),]
+for x in range(3):
+
+    archivo= f"Goomba{x}.png"
+    archivo2= f"Mago{x}.png"
+    enemigos["Goomba"].append(py.image.load(os.path.join(carpetaGoomba, archivo)))
+    enemigos["Mago"].append(py.image.load(os.path.join(carpetaMago, archivo2)))
+       
 

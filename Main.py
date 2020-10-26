@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from Class import *
 
-from Sprites import Icono, Muerte, Enemigo_1, mago, hongo, arma, proyectil
+from Sprites import Icono, Muerte, arma, proyectil, hongo
 
 from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
 
@@ -13,242 +13,6 @@ from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
 import sys
 
 
-
-class Proyectil(pg.sprite.Sprite):
-
-    def __init__(self, imagen, x, y):
-
-        super().__init__()
-
-        self.image= imagen
-        self.rect= self.image.get_rect()
-        self.rect.x=x
-        self.rect.y=y
-
-        #Para mover el proyectil
-        self.conteo=True
-        self.dir=0
-
-
-    def mover(self):
-        
-        if self.conteo:
-
-            if personajePrincipal.Dir == 0:
-                
-                self.dir=10
-
-            else:
-
-                self.image= proyectil[1]
-                self.dir=-10
-
-            self.conteo=False
-
-
-        self.rect.x+=self.dir
-    
-
-    def comprobarPosicion(self):
-
-        if nuevoProyectil.rect.x > 950 or nuevoProyectil.rect.x < 0:
-
-            nuevoProyectil.kill()
-            personajePrincipal.generar=False
-            personajePrincipal.numero=0
-
-
-
-#Clase para los enemigos básicos
-class Enemigo(pg.sprite.Sprite):
-
-    def __init__(self,imagen,maxPasos,x,y):
-
-        super().__init__()
-
-        #Gravedad
-        self.caida=3
-        self.caer=True
-
-        #Dibujar cuadros
-        self.Pasos=0
-        self.maximosPasos= maxPasos
-
-        #Controlar muerte del enemigo
-        self.muerte=False
-        self.continua=False
-        self.retraso=0
-        self.ahora=0
-
-        #Imagen inicial
-        self.imagen= imagen
-        self.image= imagen[self.Pasos]
-
-        #obtenemos el rectángulo de la imagen
-        self.rect= self.image.get_rect()
-
-        #Posición
-        self.rect.x =x
-        self.rect.y =y
-
-        #controlar rebote por velocidad o velocidad del enemigo
-        self.Velocidad=3
-
-        #controlar tiempo de cambio entre sprites o cuadros
-        self.Contador=0
-
-        
-
-    def Mover(self):
-        
-        self.rect.x-= self.Velocidad
-        self.image= self.imagen[self.Pasos]
-
-        self.Contador+=1
-
-        if self.Contador ==10:
-            self.Pasos+=1
-            self.Contador=0
-
-        if self.Pasos > self.maximosPasos:
-            self.Pasos=0
-
-        """Si se desea usar rebote
-
-        if self.rect.x < 0:
-            self.Velocidad=-3
-
-
-        elif self.rect.x > 950:
-            self.Velocidad=3
-
-        """
-
-
-    def Caer(self):
-
-        self.rect.y+= self.caida
-
-
-
-
-class Mago(Enemigo):
-
-    def __init__(self, imagen, maxPasos, x, y):
-
-        
-        super().__init__(imagen, maxPasos, x, y)
-
-        self.imagen= imagen
-
-        self.mover=False
-
-        #Control de ataque
-        self.conteo=0
-        self.bandera=False
-
-        #Variable de prueba
-        self.tiempo=0
-        self.accion=False
-
-
-    def moverX(self):
-        
-        self.rect.x+=3
-
-
-    def moverY(self, direccion):
-
-        if direccion == 0:
-
-            self.rect.y-= 3
-
-        else:
-
-            self.rect.y+=3
-    
-
-    def atacar(self):
-
-        if self.conteo >= 30.0 and self.conteo < 60:
-
-            self.image= self.imagen[1]
-
-        elif self.conteo > 60 and self.conteo < 100:
-            
-            self.rect.x = 885 
-            self.image= self.imagen[2]
-
-        
-        elif self.conteo > 100:
-
-            self.conteo=0
-            self.mover= False
-            self.bandera= True
-
-        
-
-#Clase para los bloques
-class Bloque(pg.sprite.Sprite):
-
-    def __init__(self, X, Y, imagen):
-
-        super().__init__()
-
-        #Asignando imagen
-        self.image= imagen
-
-        #Obteniendo cuadrado del sprite
-        self.rect= self.image.get_rect()
-
-        #Posición
-        self.rect.x= X
-        self.rect.y= Y
-
-
-
-
-#Clase para los elementos de decoración
-class Decoracion(Bloque):
-
-    def __init__(self, posx, posy, imagen):
-
-        super().__init__(posx,posy, imagen)
-
-
-
-
-#Clase para los potenciadores
-class Potenciador(Bloque):
-    
-
-    def __init__(self, x, y, imagen):
-    
-        super().__init__(x,y,imagen)
-
-        #Movimiento
-        self.mover=False
-
-        #Caída
-        self.caida=False
-
-
-    def moverPotenciador(self):
-
-        self.rect.x+=2
-
-
-    def caer(self):
-
-        self.rect.y+=5
-
-
-    def potenciar(self, personaje ,imagenPersonaje):
-
-        personaje.image= imagenPersonaje
-
-        
-#=================== Salimos de las clases ========================#
 
 def mostrarTexto(ventana, fuente, texto, tamaño, color, x, y):
 
@@ -291,12 +55,12 @@ potenciadores= pg.sprite.Group()
 proyectiles= pg.sprite.Group()
 
 #Instanciación de enemigos    
-nuevoEnemigo= Enemigo(Enemigo_1, 1,700, 395)
+nuevoEnemigo= Enemigo(1,700, 395)
 enemigosBasicos.add(nuevoEnemigo)
 
 
 #Magos
-nuevoMago= Mago(mago, 0, 905, 320)
+nuevoMago= Mago(0, 905, 320)
 magos.add(nuevoMago)
 
 
@@ -432,7 +196,7 @@ while True:
             proyectiles.add(nuevoProyectil)
             personajePrincipal.numero+=1
 
-        nuevoProyectil.mover()
+        nuevoProyectil.mover(personajePrincipal)
 
 
     #Movimiento y ataque del mago    
@@ -471,7 +235,7 @@ while True:
         if nuevoMago.bandera:
 
             nuevoMago.rect.x = 905
-            nuevoMago.image= mago[0]
+            nuevoMago.image= enemigos["Mago"][0]
 
             nuevoMago.moverY(1)
 
@@ -491,19 +255,22 @@ while True:
 
     if Colision:
 
-        #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
+     #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
         if personajePrincipal.Saltar or (personajePrincipal.rect.bottom < nuevoEnemigo.rect.y):
 
+
+            #Si el enemigo ya está muriendo(mostrando animación de muerte) no hacemos nada
             if nuevoEnemigo.muerte:
 
                 pass
 
 
+            #Si no, eliminamos al enemigo
             else:
 
                 personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
-                nuevoEnemigo.image=Enemigo_1[2]
+                nuevoEnemigo.image= enemigos["Goomba"][2]
                 nuevoEnemigo.rect.bottom=450
                 nuevoEnemigo.muerte=True
                 nuevoEnemigo.ahora= pg.time.get_ticks()
@@ -538,7 +305,7 @@ while True:
     #Mostrar muerte, aunque colisione con un objeto
     if personajePrincipal.muerte or (personajePrincipal.muerte and colisionSuelo):
 
-        personajePrincipal.image=Muerte
+        personajePrincipal.image= Muerte
         sprites.draw(Ventana)
 
         #Tiempo que se mostrará la imagen antes de eliminar el objeto
@@ -715,7 +482,7 @@ while True:
     #Eliminar proyectil al salir de la pantalla
     if personajePrincipal.generar:
 
-        nuevoProyectil.comprobarPosicion()
+        nuevoProyectil.comprobarPosicion(personajePrincipal)
 
     
 
