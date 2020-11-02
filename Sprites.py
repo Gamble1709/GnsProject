@@ -9,6 +9,8 @@ sniper= os.path.join(carpetaJugador, "Sniper")
 carpetaGoomba= os.path.join(carpetaPrincipal, "Imagenes/Enemigos/Goomba")
 carpetaMago= os.path.join(carpetaPrincipal, "Imagenes/Enemigos/Mago")
 
+dirPotenciadores= os.path.join(carpetaPrincipal, "Imagenes/Potenciadores") 
+
 
 #ícono del juego
 Icono= py.image.load("Imagenes/Icono.png")
@@ -25,7 +27,7 @@ movimiento={"Quieto": [], "Derecha": [], "Izquierda": [], "Salto": [], "sniperDe
 
 for x in range(1,5):
 
-    archivo= f"Mario{x}.png"
+    archivo= "Mario{}.png".format(x)
     imagen= py.image.load(os.path.join(Derecha, archivo))
     imagen2= py.image.load(os.path.join(sniperDer, archivo))
     movimiento["Derecha"].append(imagen)
@@ -34,7 +36,7 @@ for x in range(1,5):
 
 for x in range(1,5):
 
-    archivo= f"Mario{x}.png"
+    archivo= "Mario{}.png".format(x)
     imagen= py.image.load(os.path.join(Izquierda, archivo))
     imagen2= py.image.load(os.path.join(sniperIzq, archivo))
     movimiento["Izquierda"].append(imagen)
@@ -44,7 +46,7 @@ for x in range(1,5):
 #Imágenes ataque del sniper
 for x in range(3):
 
-    archivo= f"Sniper{x}.png"
+    archivo= "Sniper{}.png".format(x)
     imagen= py.image.load(os.path.join(sniperDer, "Atacar/"+archivo))
     imagen2= py.image.load(os.path.join(sniperIzq, "Atacar/"+archivo))
     movimiento["ataqueDer"].append(imagen)
@@ -69,9 +71,7 @@ movimiento["Quieto"].append(py.image.load(os.path.join(carpetaJugador,"Sniper/De
 movimiento["Quieto"].append(py.image.load(os.path.join(carpetaJugador,"Sniper/Izquierda/Mario0.png")))
 
 #Imágen de muerte
-Muerte=py.image.load("Imagenes/Personaje/Muerte.png")
-
-
+movimiento["Muerte"]=py.image.load("Imagenes/Personaje/Muerte.png")
 
 
 #Imágenes del proyectil
@@ -80,9 +80,19 @@ proyectil= [py.image.load("Imagenes/Items/proyectil.png"),
 
 #=============== Potenciadores ========================
 
-hongo= py.image.load("Imagenes/Potenciadores/Hongo.png")
-arma= py.image.load("Imagenes/Potenciadores/Arma.png")
+desarrollador= {"Hongo": [], "Arma": []}
 
+#Pronto se añadirán más sprites al hongo y uno más al arma
+for x in range(1):
+
+    archivo= "Hongo{}.png".format(x)
+    imagen= py.image.load(os.path.join(dirPotenciadores, archivo))
+    desarrollador["Hongo"].append(imagen)
+
+    archivo= "Arma{}.png".format(x)
+    imagen= py.image.load(os.path.join(dirPotenciadores, archivo))
+    desarrollador["Arma"].append(imagen)
+   
 
 #=========================== Sprites Enemigos ===========================
 
@@ -90,8 +100,8 @@ enemigos= {"Goomba": [], "Mago": []}
 
 for x in range(3):
 
-    archivo= f"Goomba{x}.png"
-    archivo2= f"Mago{x}.png"
+    archivo= "Goomba{}.png".format(x)
+    archivo2= "Mago{}.png".format(x)
     enemigos["Goomba"].append(py.image.load(os.path.join(carpetaGoomba, archivo)))
     enemigos["Mago"].append(py.image.load(os.path.join(carpetaMago, archivo2)))
        

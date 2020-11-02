@@ -4,6 +4,8 @@ from pygame.locals import *
 
 from Sprites import movimiento, proyectil, enemigos
 
+from Blocks import bloques
+
 
 class personaje(pg.sprite.Sprite):
 
@@ -310,6 +312,16 @@ class personaje(pg.sprite.Sprite):
 
 
 
+    def tiempoDeMuerte(self, inicio):
+
+        self.ahora= pg.time.get_ticks()
+        self.image= movimiento["Muerte"]
+        
+        if (self.ahora - inicio > 2000):
+
+            self.kill()
+
+
 
 class Proyectil(pg.sprite.Sprite):
 
@@ -373,9 +385,6 @@ class Enemigo(pg.sprite.Sprite):
 
         #Controlar muerte del enemigo
         self.muerte=False
-        self.continua=False
-        self.retraso=0
-        self.ahora=0
 
         #Imagen inicial
         self.imagen= enemigos 
@@ -396,7 +405,7 @@ class Enemigo(pg.sprite.Sprite):
 
         
 
-    def Mover(self):
+    def mover(self):
         
         self.rect.x-= self.Velocidad
         self.image= self.imagen["Goomba"][self.Pasos]
@@ -427,6 +436,15 @@ class Enemigo(pg.sprite.Sprite):
         self.rect.y+= self.caida
 
 
+    def tiempoDeMuerte(self, inicio):
+
+        self.image= enemigos["Goomba"][2]
+        self.ahora= pg.time.get_ticks()
+
+        if (self.ahora -inicio > 2000):
+
+            self.kill()
+
 
 
 class Mago(Enemigo):
@@ -454,17 +472,6 @@ class Mago(Enemigo):
         self.rect.x+=3
 
 
-    def moverY(self, direccion):
-
-        if direccion == 0:
-
-            self.rect.y-= 3
-
-        else:
-
-            self.rect.y+=3
-    
-
     def atacar(self):
 
         if self.conteo >= 30.0 and self.conteo < 60:
@@ -483,34 +490,33 @@ class Mago(Enemigo):
             self.mover= False
             self.bandera= True
 
+    
+
+    def tiempoDeMuerte(self, inicio):
+
+        #self.image= enemigos["Mago"][2]
+        self.ahora= pg.time.get_ticks()
+
+        if (self.ahora -inicio > 2000):
+
+            self.kill()
+
         
+
+
+
+
 
 #Clase para los bloques
 class Bloque(pg.sprite.Sprite):
-
-    def __init__(self, X, Y, imagen):
-
+    
+    def __init__(self, imagen, posX, posY): 
         super().__init__()
 
-        #Asignando imagen
         self.image= imagen
-
-        #Obteniendo cuadrado del sprite
         self.rect= self.image.get_rect()
-
-        #Posición
-        self.rect.x= X
-        self.rect.y= Y
-
-
-
-
-#Clase para los elementos de decoración
-class Decoracion(Bloque):
-
-    def __init__(self, posx, posy, imagen):
-
-        super().__init__(posx,posy, imagen)
+        self.rect.x= posX
+        self.rect.y= posY
 
 
 
@@ -524,10 +530,10 @@ class Potenciador(Bloque):
         super().__init__(x,y,imagen)
 
         #Movimiento
-        self.mover=False
+        self.mover=True
 
         #Caída
-        self.caida=False
+        self.caida=True
 
 
     def moverPotenciador(self):
@@ -540,7 +546,38 @@ class Potenciador(Bloque):
         self.rect.y+=5
 
 
-    def potenciar(self, personaje ,imagenPersonaje):
 
-        personaje.image= imagenPersonaje
+
+#Clase para los Bloque bonus
+class Bonus(Bloque):
+
+    def __init__(self, imagen, posX, posY):
+
+        super().__init__(imagen, posX, posY)
+        
+        self.pixeles=1
+
+
+    def mover(self, inicio):
+
+        ahora= pg.time.get_ticks() 
+        self.rect.y-= self.pixeles
+         
+        if(ahora - inicio > 500):
+
+            self.image= bloques["Bonus"][1] 
+            self.pixeles=-1
+
+        if(ahora - inicio > 1000):
+
+            return True 
+
+
+
+#Clase para los elementos de decoración
+class Decoracion(Bloque):
+
+    def __init__(self, imagen, posX, posY):
+
+        super().__init__(imagen, posX,posY)
 

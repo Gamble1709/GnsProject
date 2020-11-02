@@ -4,19 +4,18 @@ from pygame.locals import *
 
 from Class import *
 
-from Sprites import Icono, Muerte, arma, proyectil, hongo
+from Sprites import Icono, proyectil, desarrollador 
 
-from Blocks import bloqueBonus, bloqueBonus_2, suelo, montaniaPequenia, montaniaGrande, nubeGrande, nubePequenia, arboles, tuberiaBasica
+from Blocks import  bloques 
 
 from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
 
 import sys
 
 
+def mostrarTexto(ventana, fuente, texto, tamanio, color, x, y):
 
-def mostrarTexto(ventana, fuente, texto, tamaño, color, x, y):
-
-    tipoFuente= pg.font.Font(fuente, tamaño)
+    tipoFuente= pg.font.Font(fuente, tamanio)
     superficie= tipoFuente.render(texto, True, color) #El True es para el 'Aliased', que hace que el texto quede liso y no pixelado
     rectangulo= superficie.get_rect()
     rectangulo.x=x
@@ -50,9 +49,17 @@ magos= pg.sprite.Group()
 bloquesBonus= pg.sprite.Group()
 bloquesSimples= pg.sprite.Group()
 bloquesDecoracion= pg.sprite.Group()
-tuberias= pg.sprite.Group()
+nuevaTuberias= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
 proyectiles= pg.sprite.Group()
+
+
+#======================Instanciaciones==========================00
+
+#Instanciando personajePrincipalPrincipal principal
+personajePrincipal=personaje()
+sprites.add(personajePrincipal)
+
 
 #Instanciación de enemigos    
 nuevoEnemigo= Enemigo(1,700, 395)
@@ -64,18 +71,16 @@ nuevoMago= Mago(0, 905, 320)
 magos.add(nuevoMago)
 
 
-#Instanciando personajePrincipalPrincipal principal
-personajePrincipal=personaje()
-sprites.add(personajePrincipal)
-
 #Instanciando Bloques
-bonus= Bloque(600, 275, bloqueBonus)
+bonus= Bonus(bloques["Bonus"][0], 600, 275)
 bloquesBonus.add(bonus)
 
 #Instanciación de los potenciadores
+hongos= Potenciador(desarrollador["Hongo"][0], bonus.rect.x, bonus.rect.y -3)
+generacion=False
 
-hongos= Potenciador(bonus.rect.x, bonus.rect.y -3, hongo)
-armas= Potenciador(bonus.rect.x, bonus.rect.y -3, arma)
+#Verfica que se cree un nuevo objeto
+intanciacionArma=False
 
     
 #Crear animación de subida y bajada bloque bonus (Pronto se pondrá en la clase para borrar este espacio)
@@ -89,7 +94,7 @@ distanciaX=0
 distanciaY=435
 
 for x in range(75):
-    sueloBasico= Bloque(distanciaX, distanciaY, suelo)
+    sueloBasico= Bloque(bloques["Suelo"], distanciaX, distanciaY)
     bloquesSimples.add(sueloBasico)
     distanciaX+=45
 
@@ -102,7 +107,7 @@ cont=0
 
 for x in range(80):
     
-    bloque=Decoracion(distanciaX, distanciaY, suelo)
+    bloque=Decoracion(bloques["Suelo"],distanciaX, distanciaY)
     bloquesDecoracion.add(bloque)
 
     distanciaX+=25
@@ -116,25 +121,25 @@ for x in range(80):
 
 
 #Tuberías
-tuberia= Bloque(900, 320, tuberiaBasica)
-tuberias.add(tuberia)
+nuevaTuberia= Bloque(bloques["Tuberia"], 900, 320)
+nuevaTuberias.add(nuevaTuberia)
 
 #Montañas
-montania_1= Decoracion(100, 395, montaniaPequenia)
-bloquesDecoracion.add(montania_1)
+nuevaMontania= Decoracion(bloques["Montanias"][0], 100, 395)
+bloquesDecoracion.add(nuevaMontania)
 
-montania_2= Decoracion(montania_1.rect.right, 360 ,montaniaGrande)
-bloquesDecoracion.add(montania_2)
+nuevaMontania= Decoracion(bloques["Montanias"][1], nuevaMontania.rect.right, 360 )
+bloquesDecoracion.add(nuevaMontania)
 
 #Nubes
-nube_1= Decoracion(300, 50, nubeGrande)
-bloquesDecoracion.add(nube_1)
+nuevaNube= Decoracion(bloques["Nubes"][0], 300, 50)
+bloquesDecoracion.add(nuevaNube)
 
-nube_2= Decoracion(500, 50, nubePequenia)
-bloquesDecoracion.add(nube_2)
+nube_2= Decoracion(bloques["Nubes"][1], 500, 50)
+bloquesDecoracion.add(nuevaNube)
 
 #Árboles
-arbol= Decoracion(300, 350, arboles)
+arbol= Decoracion(bloques["Arbol"], 300, 350)
 bloquesDecoracion.add(arbol)
 
 
@@ -159,7 +164,7 @@ while True:
     bloquesDecoracion.update()
     potenciadores.update()
     bloquesBonus.update()
-    tuberias.update()
+    nuevaTuberias.update()
     proyectiles.update()
     magos.update()
 
@@ -171,7 +176,7 @@ while True:
     enemigosBasicos.draw(Ventana)
     magos.draw(Ventana)
     bloquesBonus.draw(Ventana)
-    tuberias.draw(Ventana)
+    nuevaTuberias.draw(Ventana)
     bloquesSimples.draw(Ventana)
     sprites.draw(Ventana)
 
@@ -200,7 +205,7 @@ while True:
 
 
     #Movimiento y ataque del mago    
-    if personajePrincipal.rect.right >= (tuberia.rect.left - 200):
+    if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200):
 
         if not nuevoMago.mover and nuevoMago.rect.y == 320:
 
@@ -223,7 +228,7 @@ while True:
 
         if nuevoMago.rect.y >= 230:
 
-            nuevoMago.moverY(0)
+            nuevoMago.rect.y-=3
         
         else:
 
@@ -237,7 +242,7 @@ while True:
             nuevoMago.rect.x = 905
             nuevoMago.image= enemigos["Mago"][0]
 
-            nuevoMago.moverY(1)
+            nuevoMago.rect.y+=3
 
             if nuevoMago.rect.y == 320:
 
@@ -270,56 +275,60 @@ while True:
 
                 personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
-                nuevoEnemigo.image= enemigos["Goomba"][2]
-                nuevoEnemigo.rect.bottom=450
                 nuevoEnemigo.muerte=True
-                nuevoEnemigo.ahora= pg.time.get_ticks()
-                nuevoEnemigo.retraso= nuevoEnemigo.ahora + 2000 
-            
+                ahora= pg.time.get_ticks()
+
 
         else:
 
+            #Si colisionamos con el enemigo, pero el ya está muerto, no hacemos nada
             if nuevoEnemigo.muerte:
 
                 pass
 
             else:
                 
+                #Si el enemigo está vivo y colisiona de forma directa, destruimos el personaje
                 personajePrincipal.muerte=True
-                personajePrincipal.ahora=pg.time.get_ticks()
-                personajePrincipal.retraso=personajePrincipal.ahora + 2000
+                ahora=pg.time.get_ticks()
+
+
+
+    #colisión del personaje con el mago
+    colisionMago= pg.sprite.spritecollide(personajePrincipal, magos, False) 
+
+    if colisionMago:
+
+        if personajePrincipal.rect.bottom < nuevoMago.rect.centery:
+
+           nuevoMago.muerte= True
+           ahora= pg.time.get_ticks()
+
+
+        else:
+
+            personajePrincipal.muerte= True
+            personajePrincipal.ahora= pg.time.get_ticks()
+
+
+
+   #Condicional que se encarga del tiempo antes de morir y de destruir el objeto
+    if personajePrincipal.muerte:
+
+        personajePrincipal.tiempoDeMuerte(ahora)
 
         
     if nuevoEnemigo.muerte:
 
-        #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if nuevoEnemigo.ahora >= nuevoEnemigo.retraso:
-                
-            nuevoEnemigo.kill()
+       nuevoEnemigo.tiempoDeMuerte(ahora) 
 
-        else:
+    
+    if nuevoMago.muerte:
 
-            nuevoEnemigo.ahora+=50
+        nuevoMago.tiempoDeMuerte(ahora)
 
 
-    #Mostrar muerte, aunque colisione con un objeto
-    if personajePrincipal.muerte or (personajePrincipal.muerte and colisionSuelo):
-
-        personajePrincipal.image= Muerte
-        sprites.draw(Ventana)
-
-        #Tiempo que se mostrará la imagen antes de eliminar el objeto
-        if personajePrincipal.muerte:
             
-            personajePrincipal.ahora+=100
-
-            if personajePrincipal.ahora ==  personajePrincipal.retraso:
-
-                personajePrincipal.kill()
-                personajePrincipal.conteo=0
-
-        
-        
     #Colisión del personaje con el bloque bonus (left y right)
 
     if (personajePrincipal.rect.x + 63 >= bonus.rect.left and personajePrincipal.rect.top <= bonus.rect.bottom -3)\
@@ -357,6 +366,8 @@ while True:
             if not animacion:
                 
                 animacionbonus=True
+                inicio= pg.time.get_ticks()
+                animacion=True
 
             else:
 
@@ -366,60 +377,56 @@ while True:
     #Animación de bonus
     if animacionbonus:
 
-        bonus.rect.y+=subir
-        subir+=1
-
-        if subir == 8:
             
-            bonus.image= bloqueBonus_2
-            animacionbonus=False
-            subir=-8
+        if bonus.mover(inicio):
 
-            potenciadores.add(armas)
-            armas.mover=True
-            armas.caida=True
-            animacion=True
+            animacionbonus=False
+            nuevaArma= Potenciador(desarrollador["Arma"][0], bonus.rect.x, bonus.rect.top -3)
+            potenciadores.add(nuevaArma)
+            generacion=True
 
 
     
     #Colisión del arma con el bloque bonus
-    armabonus= pg.sprite.spritecollide(armas, bloquesBonus, False)
+    if generacion:
+        armabonus= pg.sprite.spritecollide(nuevaArma, bloquesBonus, False)
 
-    if armabonus:
+        if armabonus:
 
-        #Evitar que el sprite traspase el bloque bonus
-        if armas.rect.bottom >= bonus.rect.top:
+            #Evitar que el sprite traspase el bloque bonus
+            if nuevaArma.rect.bottom >= bonus.rect.top:
 
-            armas.rect.bottom = bonus.rect.top+3
-            armas.caida=False 
+                nuevaArma.rect.bottom = bonus.rect.top+3
+                nuevaArma.caida=False 
 
-        else: 
-            armas.caida=True
+            else: 
+                nuevaArma.caida=True
 
 
 
 
     #Colisión del arma con el suelo
-    armaSuelo= pg.sprite.spritecollide(armas, bloquesSimples, False)
+    if generacion:
+        armaSuelo= pg.sprite.spritecollide(nuevaArma, bloquesSimples, False)
 
-    if armaSuelo:
+        if armaSuelo:
 
-        if armas.rect.bottom >= sueloBasico.rect.top:
+            if nuevaArma.rect.bottom >= sueloBasico.rect.top:
+                
+                nuevaArma.rect.bottom= sueloBasico.rect.top+3
+                nuevaArma.caida=False
             
-            armas.rect.bottom= sueloBasico.rect.top+3
-            armas.caida=False
-        
 
-    else:
+        else:
 
-        armas.caida= True
+            nuevaArma.caida= True
     
 
 
     #Colsisión del personaje con el suelo
     colisionSuelo= pg.sprite.spritecollide(personajePrincipal, bloquesSimples, False)
 
-    if colisionSuelo:
+    if colisionSuelo and not personajePrincipal.muerte:
  
         if personajePrincipal.rect.bottom >= sueloBasico.rect.top:
 
@@ -457,13 +464,13 @@ while True:
 
     #Colisión con potenciadores
 
-    personajeArmas= pg.sprite.spritecollide(personajePrincipal, potenciadores, False)
+    personajeArmas= pg.sprite.spritecollide(personajePrincipal, potenciadores, True)
 
     if personajeArmas:
 
         personajePrincipal.puntuacion+=1000
         personajePrincipal.francotirador=True
-        armas.kill()
+        nuevaArma.kill()
 
 
     #Colisión del enemigo con proyectil
@@ -488,14 +495,14 @@ while True:
 
     #Colisión tubería
 
-    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, tuberias, False)
+    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, nuevaTuberias, False)
 
     if colisionTuberia:
 
         #Comprobamos si está encima de la tubería
-        if personajePrincipal.rect.bottom >= tuberia.rect.top and (personajePrincipal.rect.centery - 10) < tuberia.rect.top:
+        if personajePrincipal.rect.bottom >= nuevaTuberia.rect.top and (personajePrincipal.rect.centery - 10) < tuberia.rect.top:
 
-            personajePrincipal.rect.bottom = tuberia.rect.top +1
+            personajePrincipal.rect.bottom = nuevaTuberia.rect.top +1
             personajePrincipal.Saltar=False
             personajePrincipal.aumento= -30
 
@@ -503,9 +510,9 @@ while True:
         #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
         else:
             
-            if personajePrincipal.rect.right >= tuberia.rect.left:
+            if personajePrincipal.rect.right >= nuevaTuberia.rect.left:
 
-                 personajePrincipal.rect.right= tuberia.rect.left
+                 personajePrincipal.rect.right= nuevaTuberia.rect.left
         
 
 #========================== Movimiento de los personajes ====================================#
@@ -517,18 +524,20 @@ while True:
         personajePrincipal.Movimiento()
 
     if not nuevoEnemigo.muerte:
-        nuevoEnemigo.Mover()
+        nuevoEnemigo.mover()
 
 
     #Movimiento de potenciadores
-    if armas.mover:
+    if generacion:
 
-        armas.moverPotenciador()
+        if nuevaArma.mover:
 
-    if armas.caida:
+            nuevaArma.moverPotenciador()
 
-        armas.caer()
-        
+        if nuevaArma.caida:
+
+            nuevaArma.caer()
+            
 
 #====================== Otros ============================#
         

@@ -1,22 +1,28 @@
-import pygame as pg
+import pygame as pg, os
 from pygame import *
 
-
-bloqueBonus= pg.image.load("Bloques/Bloque_Bonus.png")
-bloqueBonus_2= pg.image.load("Bloques/BloqueBonus_2.png")
-
-suelo= pg.image.load("Bloques/Suelo.png")
-
-montaniaPequenia= pg.image.load("Bloques/Decoracion/montania_1.png")
-montaniaGrande= pg.image.load("Bloques/Decoracion/montaniaGrande.png")
-
-nubeGrande= pg.image.load("Bloques/Decoracion/nubeGrande.png")
-nubePequenia= pg.image.load("Bloques/Decoracion/nubePequenia.png")
-
-arboles= pg.image.load("Bloques/Decoracion/arboles.png")
-
-tuberiaBasica= pg.image.load("Bloques/Decoracion/tuberia.png")
+directorio= os.path.dirname(__file__)
+dirBloques= os.path.join(directorio, "Bloques")
+Especiales= os.path.join(dirBloques, "Especiales")
+decoracion= os.path.join(dirBloques, "Decoracion")
 
 
+bloques= {"Bonus": [], "Montanias": [], "Nubes": [], 
+        "Suelo": pg.image.load(os.path.join(decoracion, "Suelo.png")), 
+        "Arbol": pg.image.load(os.path.join(decoracion, "arboles.png")) ,
+        "Tuberia": pg.image.load(os.path.join(Especiales, "tuberia.png"))}
 
 
+for x in range(2):
+
+    archivo= "montania{}.png".format(x)
+    imagen= pg.image.load(os.path.join(decoracion, archivo))
+    bloques["Montanias"].append(imagen)
+
+    archivo= "bloqueBonus{}.png".format(x)
+    imagen= pg.image.load(os.path.join(Especiales, archivo))
+    bloques["Bonus"].append(imagen)
+
+    archivo= "nube{}.png".format(x)
+    imagen= pg.image.load(os.path.join(decoracion, archivo))
+    bloques["Nubes"].append(imagen)
