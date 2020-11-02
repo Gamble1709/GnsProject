@@ -377,7 +377,6 @@ while True:
     #Animación de bonus
     if animacionbonus:
 
-            
         if bonus.mover(inicio):
 
             animacionbonus=False
