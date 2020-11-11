@@ -37,10 +37,14 @@ class personaje(pg.sprite.Sprite):
         #Controla el alto del salto
         self.aumento=-30
 
+        #Activa el salto del personaje
         self.Saltar= False
 
         #Controlar velocidad mientras salta
         self.velocidad=2
+
+        #Si el personaje está cayendo se activa
+        self.caida= False
 
         #Dirección mientras está quieto
         self.Dir=0
@@ -51,9 +55,10 @@ class personaje(pg.sprite.Sprite):
  
         #Cargar imagen
         self.image= movimiento["Quieto"][0]
+        self.image2= movimiento["Salto"][0]
 
         #obtiene el rectangulo del sprite 
-        self.rect= self.image.get_rect()
+        self.rect= self.image2.get_rect()
         
         #Coordenadas del rectangulo
         self.rect.x=50
@@ -186,8 +191,13 @@ class personaje(pg.sprite.Sprite):
         #Activar salto
         elif Tecla[K_w]:
 
-            self.Saltar= True
+            if self.caida:
 
+                pass
+
+            else:
+
+                self.Saltar= True
 
                  
         #Quieto
@@ -456,40 +466,64 @@ class Mago(Enemigo):
 
         self.image= self.imagen["Mago"][0]
 
-        self.mover=False
+        self.movimiento=False
 
         #Control de ataque
         self.conteo=0
         self.bandera=False
+
+        self.inicio=0
 
         #Variable de prueba
         self.tiempo=0
         self.accion=False
 
 
-    def moverX(self):
-        
-        self.rect.x+=3
+    def mover(self):
+
+        if self.rect.y > 230 and not self.atacar(pg.time.get_ticks()):
+
+            self.rect.y-= 3 
+            self.inicio= pg.time.get_ticks()
+
+        elif self.atacar(pg.time.get_ticks()):
+
+            if self.rect.y < 320:
+
+                self.rect.y+= 3
+
+            else:
+
+                self.movimiento= False
+
+        else:
+
+            self.atacar(pg.time.get_ticks())
 
 
-    def atacar(self):
 
-        if self.conteo >= 30.0 and self.conteo < 60:
+    def atacar(self, ahora):
+
+        if ahora - self.inicio >= 1000 and ahora - self.inicio <= 2000:
 
             self.image= self.imagen["Mago"][1]
+            return False
 
-        elif self.conteo > 60 and self.conteo < 100:
-            
+        elif ahora - self.inicio >= 2000 and ahora - self.inicio <= 3000: 
             self.rect.x = 885 
             self.image= self.imagen["Mago"][2]
+            return False
 
         
-        elif self.conteo > 100:
+        elif ahora - self.inicio >= 3000: 
 
-            self.conteo=0
-            self.mover= False
-            self.bandera= True
+            self.rect.x= 905
+            self.image= self.imagen["Mago"][0]
+            return True
 
+        else:
+
+            return False
     
 
     def tiempoDeMuerte(self, inicio):

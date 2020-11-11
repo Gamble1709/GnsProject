@@ -207,50 +207,14 @@ while True:
     #Movimiento y ataque del mago    
     if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200):
 
-        if not nuevoMago.mover and nuevoMago.rect.y == 320:
+        if nuevoMago.rect.y == 320:
 
-            if nuevoMago.accion and nuevoMago.tiempo == int(tiempo):
-
-                nuevoMago.mover= True
-                nuevoMago.tiempo=0
-                nuevoMago.accion=False
-
-            elif nuevoMago.accion:
-
-                pass
-
-            else:
-
-                nuevoMago.mover= True
+            nuevoMago.inicio= pg.time.get_ticks()
+            nuevoMago.movimiento= True
 
 
-    if nuevoMago.mover:
 
-        if nuevoMago.rect.y >= 230:
-
-            nuevoMago.rect.y-=3
-        
-        else:
-
-           nuevoMago.atacar()
-           nuevoMago.conteo+=1
-
-    else:
-
-        if nuevoMago.bandera:
-
-            nuevoMago.rect.x = 905
-            nuevoMago.image= enemigos["Mago"][0]
-
-            nuevoMago.rect.y+=3
-
-            if nuevoMago.rect.y == 320:
-
-                nuevoMago.bandera= False
-                nuevoMago.tiempo= (int(tiempo) - 5)
-                nuevoMago.accion= True
-
-
+            
 #============================= Colisiones ==================================#
     
 
@@ -262,7 +226,6 @@ while True:
 
      #Sí la posición en Y es menor al enemigo, significa que el personajePrincipal colisionó estando en el aire y cayendo encima del enemigo
         if personajePrincipal.Saltar or (personajePrincipal.rect.bottom < nuevoEnemigo.rect.y):
-
 
             #Si el enemigo ya está muriendo(mostrando animación de muerte) no hacemos nada
             if nuevoEnemigo.muerte:
@@ -317,50 +280,32 @@ while True:
 
         personajePrincipal.tiempoDeMuerte(ahora)
 
-        
     if nuevoEnemigo.muerte:
 
        nuevoEnemigo.tiempoDeMuerte(ahora) 
 
-    
     if nuevoMago.muerte:
 
         nuevoMago.tiempoDeMuerte(ahora)
 
 
-            
-    #Colisión del personaje con el bloque bonus (left y right)
+    #Colisión con Bloque bonus            
+    colisionBonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
 
-    if (personajePrincipal.rect.x + 63 >= bonus.rect.left and personajePrincipal.rect.top <= bonus.rect.bottom -3)\
-       and personajePrincipal.rect.x < bonus.rect.right:
-           
+    if colisionBonus:
 
-        personajePrincipal.rect.x= personajePrincipal.posX
+        if personajePrincipal.rect.right < bonus.rect.centerx and personajePrincipal.rect.top < bonus.rect.centery + 5:
 
+            personajePrincipal.rect.right= bonus.rect.left
 
-    elif (personajePrincipal.rect.x <= bonus.rect.right and personajePrincipal.rect.top <= bonus.rect.bottom -3) \
-         and personajePrincipal.rect.x > bonus.rect.left:
+        if personajePrincipal.rect.left > bonus.rect.centerx and personajePrincipal.rect.top < bonus.rect.centery - 5:
 
-        personajePrincipal.rect.x= personajePrincipal.posX
+            personajePrincipal.rect.left= bonus.rect.right
 
+        if personajePrincipal.rect.top > bonus.rect.centery :
 
-    else:
-
-        personajePrincipal.posX= personajePrincipal.rect.x
-
-        
-        
-
-    #Colisión con bloque Bonus (bottom)
-    colisionbonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
-
-
-    if colisionbonus:
-
-        if personajePrincipal.rect.y <= bonus.rect.bottom and personajePrincipal.rect.x + 63 > bonus.rect.left:
-            
             #Esto para que al colisionar baje y no continue subiendo
-            personajePrincipal.rect.y+=3
+            personajePrincipal.rect.y += 10
             personajePrincipal.aumento=0
 
             if not animacion:
@@ -369,11 +314,14 @@ while True:
                 inicio= pg.time.get_ticks()
                 animacion=True
 
-            else:
+        if personajePrincipal.rect.bottom < bonus.rect.centery - 8:
 
-                personajePrincipal.rect.y+=3
-
-
+            personajePrincipal.Saltar=False
+            personajePrincipal.rect.bottom=bonus.rect.top + 1
+            personajePrincipal.aumento= -30
+        
+    
+    
     #Animación de bonus
     if animacionbonus:
 
@@ -402,8 +350,6 @@ while True:
                 nuevaArma.caida=True
 
 
-
-
     #Colisión del arma con el suelo
     if generacion:
         armaSuelo= pg.sprite.spritecollide(nuevaArma, bloquesSimples, False)
@@ -427,25 +373,12 @@ while True:
 
     if colisionSuelo and not personajePrincipal.muerte:
  
-        if personajePrincipal.rect.bottom >= sueloBasico.rect.top:
-
-            personajePrincipal.Saltar=False
-            personajePrincipal.aumento=-30
-            personajePrincipal.rect.bottom= sueloBasico.rect.top+1
-
-
-        #Si el personaje no está saltando ni hay colisión con el suelo, significa que está cayento
-        
-        else:
-            
-            if not personajePrincipal.Saltar:
-
-                personajePrincipal.rect.y+=5
-        
+        personajePrincipal.Saltar=False
+        personajePrincipal.aumento=-30
+        personajePrincipal.rect.bottom= sueloBasico.rect.top+1
 
 
     #Colisión del enemigo con el suelo
-            
     colisionSueloEnemigo= pg.sprite.spritecollide(nuevoEnemigo, bloquesSimples, False)
 
     if colisionSueloEnemigo:
@@ -460,9 +393,7 @@ while True:
         caida=True
 
 
-
     #Colisión con potenciadores
-
     personajeArmas= pg.sprite.spritecollide(personajePrincipal, potenciadores, True)
 
     if personajeArmas:
@@ -473,7 +404,6 @@ while True:
 
 
     #Colisión del enemigo con proyectil
-    
     if personajePrincipal.generar:
 
         colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, enemigosBasicos, False)
@@ -493,17 +423,16 @@ while True:
     
 
     #Colisión tubería
-
     colisionTuberia= pg.sprite.spritecollide(personajePrincipal, nuevaTuberias, False)
 
     if colisionTuberia:
 
         #Comprobamos si está encima de la tubería
-        if personajePrincipal.rect.bottom >= nuevaTuberia.rect.top and (personajePrincipal.rect.centery - 10) < tuberia.rect.top:
+        if personajePrincipal.rect.bottom >= nuevaTuberia.rect.top and (personajePrincipal.rect.centery - 10) < nuevaTuberia.rect.top:
 
             personajePrincipal.rect.bottom = nuevaTuberia.rect.top +1
             personajePrincipal.Saltar=False
-            personajePrincipal.aumento= -30
+            #personajePrincipal.aumento= -30
 
         
         #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
@@ -516,14 +445,16 @@ while True:
 
 #========================== Movimiento de los personajes ====================================#
         
-    
     #Mover personajePrincipal y enemigos
-
     if not personajePrincipal.muerte:
         personajePrincipal.Movimiento()
 
     if not nuevoEnemigo.muerte:
         nuevoEnemigo.mover()
+
+    if nuevoMago.movimiento:
+
+        nuevoMago.mover()
 
 
     #Movimiento de potenciadores
@@ -549,6 +480,11 @@ while True:
     if nuevoEnemigo.caer:
         nuevoEnemigo.Caer()
 
+
+    if not personajePrincipal.Saltar and not colisionBonus and not colisionSuelo:
+
+        personajePrincipal.Saltar = True
+        personajePrincipal.aumento=0
         
     #Salto
     if personajePrincipal.Saltar:
