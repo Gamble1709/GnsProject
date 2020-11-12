@@ -193,15 +193,24 @@ while True:
 #======================================================================================================
 
     #Generando proyectiles
-    if personajePrincipal.generar:
+    if personajePrincipal.generar and personajePrincipal.activo == False:
         
-        if personajePrincipal.numero == 0:
+        personajePrincipal.activo= True
+        
+        nuevoProyectil= Proyectil(proyectil[0], personajePrincipal.rect.right, personajePrincipal.rect.centery + 5)
+        proyectiles.add(nuevoProyectil)
 
-            nuevoProyectil= Proyectil(proyectil[0], personajePrincipal.rect.right, (personajePrincipal.rect.centery + 5))
-            proyectiles.add(nuevoProyectil)
-            personajePrincipal.numero+=1
+    
+    if personajePrincipal.generar:
 
-        nuevoProyectil.mover(personajePrincipal)
+        if nuevoProyectil.comprobarPosicion():
+
+            personajePrincipal.generar= False
+            personajePrincipal.activo= False
+
+        else:
+
+            nuevoProyectil.mover(personajePrincipal)
 
 
     #Movimiento y ataque del mago    
@@ -406,7 +415,7 @@ while True:
     #Colisión del enemigo con proyectil
     if personajePrincipal.generar:
 
-        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, enemigosBasicos, False)
+        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, enemigosBasicos, True, True)
 
         if colisionProyectil:
 
@@ -416,9 +425,11 @@ while True:
 
 
     #Eliminar proyectil al salir de la pantalla
-    if personajePrincipal.generar:
+    """if personajePrincipal.generar:
 
-        nuevoProyectil.comprobarPosicion(personajePrincipal)
+        nuevoProyectil.comprobarPosicion()
+
+        """
 
     
 

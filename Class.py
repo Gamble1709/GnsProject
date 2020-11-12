@@ -32,7 +32,7 @@ class personaje(pg.sprite.Sprite):
 
         #Cuando se crea un proyectil se activa
         self.generar=False
-        self.numero=0
+        self.activo= False
 
         #Controla el alto del salto
         self.aumento=-30
@@ -223,7 +223,7 @@ class personaje(pg.sprite.Sprite):
         #Ataque
         if Tecla[K_SPACE]:
             
-            if self.numero != 0:
+            if self.generar:
 
                 pass
 
@@ -368,14 +368,16 @@ class Proyectil(pg.sprite.Sprite):
         self.rect.x+=self.dir
     
 
-    def comprobarPosicion(self, personaje):
+    def comprobarPosicion(self):
 
         if self.rect.x > 950 or self.rect.x < 0:
 
             self.kill()
-            personaje.generar=False
-            personaje.numero=0
+            return True
 
+        else:
+
+            return False
 
 
 #Clase para los enemigos básicos
