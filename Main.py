@@ -10,6 +10,8 @@ from Blocks import  bloques
 
 from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
 
+from Sonidos import *
+
 import sys
 
 
@@ -44,12 +46,12 @@ tiempo= 500
 
 #grupos de Sprites
 sprites= pg.sprite.Group()
-enemigosBasicos= pg.sprite.Group()
+goombas= pg.sprite.Group()
 magos= pg.sprite.Group()
 bloquesBonus= pg.sprite.Group()
 bloquesSimples= pg.sprite.Group()
 bloquesDecoracion= pg.sprite.Group()
-nuevaTuberias= pg.sprite.Group()
+tuberias= pg.sprite.Group()
 potenciadores= pg.sprite.Group()
 proyectiles= pg.sprite.Group()
 
@@ -62,12 +64,12 @@ sprites.add(personajePrincipal)
 
 
 #Instanciación de enemigos    
-nuevoEnemigo= Enemigo(1,700, 395)
-enemigosBasicos.add(nuevoEnemigo)
+nuevoEnemigo= Enemigo(700, 395)
+goombas.add(nuevoEnemigo)
 
 
 #Magos
-nuevoMago= Mago(0, 905, 320)
+nuevoMago= Mago(905, 320)
 magos.add(nuevoMago)
 
 
@@ -122,7 +124,7 @@ for x in range(80):
 
 #Tuberías
 nuevaTuberia= Bloque(bloques["Tuberia"], 900, 320)
-nuevaTuberias.add(nuevaTuberia)
+tuberias.add(nuevaTuberia)
 
 #Montañas
 nuevaMontania= Decoracion(bloques["Montanias"][0], 100, 395)
@@ -142,7 +144,7 @@ bloquesDecoracion.add(nuevaNube)
 arbol= Decoracion(bloques["Arbol"], 300, 350)
 bloquesDecoracion.add(arbol)
 
-
+pg.mixer.music.play()
 #========================== Bucle principal ===========================#
 
 while True:
@@ -159,12 +161,12 @@ while True:
 
     #Actualización de los sprites
     sprites.update()
-    enemigosBasicos.update()
+    goombas.update()
     bloquesSimples.update()
     bloquesDecoracion.update()
     potenciadores.update()
     bloquesBonus.update()
-    nuevaTuberias.update()
+    tuberias.update()
     proyectiles.update()
     magos.update()
 
@@ -173,10 +175,10 @@ while True:
     bloquesDecoracion.draw(Ventana)
     potenciadores.draw(Ventana)
     proyectiles.draw(Ventana)
-    enemigosBasicos.draw(Ventana)
+    goombas.draw(Ventana)
     magos.draw(Ventana)
     bloquesBonus.draw(Ventana)
-    nuevaTuberias.draw(Ventana)
+    tuberias.draw(Ventana)
     bloquesSimples.draw(Ventana)
     sprites.draw(Ventana)
 
@@ -196,27 +198,37 @@ while True:
     if personajePrincipal.generar and personajePrincipal.activo == False:
         
         personajePrincipal.activo= True
+        personajePrincipal.generar= False
         
-        nuevoProyectil= Proyectil(proyectil[0], personajePrincipal.rect.right, personajePrincipal.rect.centery + 5)
+        nuevoProyectil= Proyectil(personajePrincipal.rect.right, personajePrincipal.rect.centery + 5)
+
         proyectiles.add(nuevoProyectil)
 
+        #Controla la dirección del proyectil 
+        if personajePrincipal.Dir == 0:
+
+            nuevoProyectil.dir= 20
+
+        else:
+
+            nuevoProyectil.dir= -20
+
     
-    if personajePrincipal.generar:
+    if personajePrincipal.activo:
 
         if nuevoProyectil.comprobarPosicion():
 
-            personajePrincipal.generar= False
             personajePrincipal.activo= False
 
         else:
 
-            nuevoProyectil.mover(personajePrincipal)
+            nuevoProyectil.mover()
 
 
     #Movimiento y ataque del mago    
-    if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200):
+    if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200) and not personajePrincipal.muerte:
 
-        if nuevoMago.rect.y == 320:
+        if nuevoMago.rect.y == 320 and nuevoMago.comprobarMovimiento():
 
             nuevoMago.inicio= pg.time.get_ticks()
             nuevoMago.movimiento= True
@@ -229,7 +241,7 @@ while True:
 
     #Creando colisión con enemigos + Muerte del enemigo
     
-    Colision= pg.sprite.spritecollide(personajePrincipal, enemigosBasicos, False)
+    Colision= pg.sprite.spritecollide(personajePrincipal, goombas, False)
 
     if Colision:
 
@@ -247,8 +259,9 @@ while True:
 
                 personajePrincipal.puntuacion+=500
                 personajePrincipal.aumento=-30
+                jump.play()
                 nuevoEnemigo.muerte=True
-                ahora= pg.time.get_ticks()
+                nuevoEnemigo.inicio= pg.time.get_ticks()
 
 
         else:
@@ -260,9 +273,16 @@ while True:
 
             else:
                 
-                #Si el enemigo está vivo y colisiona de forma directa, destruimos el personaje
-                personajePrincipal.muerte=True
-                ahora=pg.time.get_ticks()
+                #Evita que la colisión continua se genere un bucle donde nunca desaparece
+                if personajePrincipal.muerte:
+
+                    pass
+
+        #Si el enemigo está vivo y colisiona de forma directa, destruimos el personaje
+                else:
+
+                    personajePrincipal.muerte=True
+                    personajePrincipal.inicio=pg.time.get_ticks()
 
 
 
@@ -273,29 +293,71 @@ while True:
 
         if personajePrincipal.rect.bottom < nuevoMago.rect.centery:
 
-           nuevoMago.muerte= True
-           ahora= pg.time.get_ticks()
+            if nuevoMago.muerte | personajePrincipal.muerte:
 
+                pass
+
+            else:
+               
+               nuevoMago.muerte= True
+
+               #controla inicio de la muerte para contar 2 segundos
+               nuevoMago.inicio= pg.time.get_ticks()
 
         else:
 
-            personajePrincipal.muerte= True
-            personajePrincipal.ahora= pg.time.get_ticks()
+            if personajePrincipal.muerte | nuevoMago.muerte:
+
+                pass
+
+            else:
+
+                personajePrincipal.muerte= True
+                personajePrincipal.inicio= pg.time.get_ticks()
+
+
+
+    #Colisión del enemigo con proyectil
+    if personajePrincipal.activo:
+
+        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, goombas, False)
+        proyectilMago= pg.sprite.spritecollide(nuevoProyectil, magos, False)
+        proyectilTuberia= pg.sprite.spritecollide(nuevoProyectil, tuberias, False)
+
+        if colisionProyectil:
+
+            personajePrincipal.activo= False
+            nuevoProyectil.kill()
+            nuevoEnemigo.inicio= pg.time.get_ticks()
+            nuevoEnemigo.muerte= True
+
+        if proyectilMago:
+           
+            personajePrincipal.activo= False
+            nuevoProyectil.kill()
+            nuevoEnemigo.inicio= pg.time.get_ticks()
+            nuevoMago.muerte= True
+
+
+        if proyectilTuberia:
+
+            personajePrincipal.activo= False
+            nuevoProyectil.kill()
 
 
 
    #Condicional que se encarga del tiempo antes de morir y de destruir el objeto
     if personajePrincipal.muerte:
 
-        personajePrincipal.tiempoDeMuerte(ahora)
+        personajePrincipal.tiempoDeMuerte()
 
     if nuevoEnemigo.muerte:
 
-       nuevoEnemigo.tiempoDeMuerte(ahora) 
+       nuevoEnemigo.tiempoDeMuerte() 
 
     if nuevoMago.muerte:
 
-        nuevoMago.tiempoDeMuerte(ahora)
+        nuevoMago.tiempoDeMuerte()
 
 
     #Colisión con Bloque bonus            
@@ -412,38 +474,18 @@ while True:
         nuevaArma.kill()
 
 
-    #Colisión del enemigo con proyectil
-    if personajePrincipal.generar:
-
-        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, enemigosBasicos, True, True)
-
-        if colisionProyectil:
-
-            nuevoProyectil.kill() 
-            personajePrincipal.generar=False
-            nuevoEnemigo.kill()
-
-
-    #Eliminar proyectil al salir de la pantalla
-    """if personajePrincipal.generar:
-
-        nuevoProyectil.comprobarPosicion()
-
-        """
-
-    
 
     #Colisión tubería
-    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, nuevaTuberias, False)
+    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, tuberias, False)
 
     if colisionTuberia:
 
         #Comprobamos si está encima de la tubería
-        if personajePrincipal.rect.bottom >= nuevaTuberia.rect.top and (personajePrincipal.rect.centery - 10) < nuevaTuberia.rect.top:
+        if personajePrincipal.rect.bottom < nuevaTuberia.rect.centery - 10:
 
             personajePrincipal.rect.bottom = nuevaTuberia.rect.top +1
             personajePrincipal.Saltar=False
-            #personajePrincipal.aumento= -30
+            personajePrincipal.aumento= -30
 
         
         #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
@@ -453,6 +495,13 @@ while True:
 
                  personajePrincipal.rect.right= nuevaTuberia.rect.left
         
+
+    """ Se agrega cuando se puedan generar múltiples enemigos
+    if nuevoMago.invocar:
+
+        nuevoEnemigo= Enemigo(400, 395)
+        goombas.add(nuevoEnemigo)
+        """
 
 #========================== Movimiento de los personajes ====================================#
         
@@ -492,7 +541,7 @@ while True:
         nuevoEnemigo.Caer()
 
 
-    if not personajePrincipal.Saltar and not colisionBonus and not colisionSuelo:
+    if not personajePrincipal.Saltar and not colisionBonus and not colisionSuelo and not colisionTuberia:
 
         personajePrincipal.Saltar = True
         personajePrincipal.aumento=0

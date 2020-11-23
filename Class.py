@@ -6,6 +6,8 @@ from Sprites import movimiento, proyectil, enemigos
 
 from Blocks import bloques
 
+from Sonidos import jump, shoot 
+
 
 class personaje(pg.sprite.Sprite):
 
@@ -52,6 +54,7 @@ class personaje(pg.sprite.Sprite):
 
         #Controlar muerte
         self.muerte=False
+        self.inicio=0
  
         #Cargar imagen
         self.image= movimiento["Quieto"][0]
@@ -97,6 +100,10 @@ class personaje(pg.sprite.Sprite):
 
             #Salto combinado
             elif Tecla[K_d] and Tecla[K_w]:
+
+                if not self.Saltar: 
+
+                    jump.play()
 
                 self.rect.x+=2
                 self.Saltar=True
@@ -148,6 +155,10 @@ class personaje(pg.sprite.Sprite):
 
             #Salto combinado
             elif Tecla[K_a] and Tecla[K_w]:
+                
+                if not self.Saltar:
+
+                    jump.play()
 
                 self.rect.x-=2
                 self.Saltar=True
@@ -190,13 +201,18 @@ class personaje(pg.sprite.Sprite):
 
         #Activar salto
         elif Tecla[K_w]:
+            
+            if not self.Saltar:
+
+                jump.play()
+
 
             if self.caida:
 
                 pass
 
             else:
-
+                
                 self.Saltar= True
 
                  
@@ -222,10 +238,15 @@ class personaje(pg.sprite.Sprite):
 
         #Ataque
         if Tecla[K_SPACE]:
+
+            if not self.activo and self.francotirador:
+
+                shoot.play()
             
-            if self.generar:
+            if self.activo:
 
                 pass
+
 
             elif self.francotirador:
             
@@ -322,12 +343,12 @@ class personaje(pg.sprite.Sprite):
 
 
 
-    def tiempoDeMuerte(self, inicio):
+    def tiempoDeMuerte(self):
 
         self.ahora= pg.time.get_ticks()
         self.image= movimiento["Muerte"]
         
-        if (self.ahora - inicio > 2000):
+        if (self.ahora - self.inicio > 2000):
 
             self.kill()
 
@@ -335,35 +356,24 @@ class personaje(pg.sprite.Sprite):
 
 class Proyectil(pg.sprite.Sprite):
 
-    def __init__(self, imagen, x, y):
+    def __init__(self, x, y):
 
         super().__init__()
 
-        self.image= imagen
+        self.image= proyectil[0]
         self.rect= self.image.get_rect()
         self.rect.x=x
         self.rect.y=y
 
         #Para mover el proyectil
-        self.conteo=True
         self.dir=0
 
 
-    def mover(self, personaje):
+    def mover(self):
         
-        if self.conteo:
+        if self.dir == -20:
 
-            if personaje.Dir == 0:
-                
-                self.dir=10
-
-            else:
-
-                self.image= proyectil[1]
-                self.dir=-10
-
-            self.conteo=False
-
+            self.image= proyectil[1]
 
         self.rect.x+=self.dir
     
@@ -383,7 +393,7 @@ class Proyectil(pg.sprite.Sprite):
 #Clase para los enemigos básicos
 class Enemigo(pg.sprite.Sprite):
 
-    def __init__(self,maxPasos,x,y):
+    def __init__(self, x,y):
 
         super().__init__()
 
@@ -393,10 +403,11 @@ class Enemigo(pg.sprite.Sprite):
 
         #Dibujar cuadros
         self.Pasos=0
-        self.maximosPasos= maxPasos
+        self.maximosPasos= 1
 
         #Controlar muerte del enemigo
         self.muerte=False
+        self.inicio=0
 
         #Imagen inicial
         self.imagen= enemigos 
@@ -448,12 +459,12 @@ class Enemigo(pg.sprite.Sprite):
         self.rect.y+= self.caida
 
 
-    def tiempoDeMuerte(self, inicio):
+    def tiempoDeMuerte(self):
 
         self.image= enemigos["Goomba"][2]
         self.ahora= pg.time.get_ticks()
 
-        if (self.ahora -inicio > 2000):
+        if (self.ahora - self.inicio > 2000):
 
             self.kill()
 
@@ -461,10 +472,10 @@ class Enemigo(pg.sprite.Sprite):
 
 class Mago(Enemigo):
 
-    def __init__(self, maxPasos, x, y):
+    def __init__(self, x, y):
 
         
-        super().__init__(maxPasos, x, y)
+        super().__init__(x, y)
 
         self.image= self.imagen["Mago"][0]
 
@@ -473,8 +484,11 @@ class Mago(Enemigo):
         #Control de ataque
         self.conteo=0
         self.bandera=False
-
         self.inicio=0
+        self.retraso=0 
+
+        #Ataque
+        self.invocar= False
 
         #Variable de prueba
         self.tiempo=0
@@ -503,6 +517,14 @@ class Mago(Enemigo):
             self.atacar(pg.time.get_ticks())
 
 
+    def comprobarMovimiento(self):
+
+        if (pg.time.get_ticks()) - self.retraso >= 5000:
+
+            return True
+
+        return False
+
 
     def atacar(self, ahora):
 
@@ -519,8 +541,10 @@ class Mago(Enemigo):
         
         elif ahora - self.inicio >= 3000: 
 
+            self.invocar=True
             self.rect.x= 905
             self.image= self.imagen["Mago"][0]
+            self.retraso= pg.time.get_ticks()
             return True
 
         else:
@@ -528,12 +552,12 @@ class Mago(Enemigo):
             return False
     
 
-    def tiempoDeMuerte(self, inicio):
+    def tiempoDeMuerte(self):
 
         #self.image= enemigos["Mago"][2]
         self.ahora= pg.time.get_ticks()
 
-        if (self.ahora -inicio > 2000):
+        if (self.ahora - self.inicio > 2000):
 
             self.kill()
 
