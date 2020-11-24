@@ -1,0 +1,13 @@
+Esperos que leas esto antes de probar el proyecto y conozcas los controles:
+
+      W
+    A   D          
+
+  Movimiento  
+
+Si tomas el bonus, podrás usar la tecla Space para activar el ataque.
+
+Por el momento son pocos, pero espero con la ayuda de Dios mejorar el proyecto y agregar más funcionalidades. Espero que disfrutes el inicio de este pequeño proyecto y disculpa si quizás el código no sea tan pulido ya que me gusta que las líneas sean largas y en el editor que uso no se vé tan mal, pero tú que usas Pycharm quizás se vea algo mal, además de que encontrarás una que otra línea comentada ya que he estado eliminando código innecesario; en fin espero que lo disfrutes.
+
+¡Gracias por todo lo que nos has enseñado PROGRAMACIÓN FÁCIL!
+
