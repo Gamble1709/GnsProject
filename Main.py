@@ -10,7 +10,7 @@ from Blocks import  bloques
 
 from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
 
-from Sonidos import *
+from Sounds import *
 
 import sys
 

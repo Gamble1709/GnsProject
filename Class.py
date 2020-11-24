@@ -6,7 +6,7 @@ from Sprites import movimiento, proyectil, enemigos
 
 from Blocks import bloques
 
-from Sonidos import jump, shoot 
+from Sounds import jump, shoot 
 
 
 class personaje(pg.sprite.Sprite):
