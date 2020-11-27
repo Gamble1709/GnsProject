@@ -8,7 +8,7 @@ from Sprites import Icono, proyectil, desarrollador
 
 from Blocks import  bloques 
 
-from Constants import Ancho_pantalla, Alto_pantalla, Azul, Blanco, bertram
+from Constants import ANCHO_PANTALLA, ALTO_PANTALLA, AZUL, BLANCO, ROJO, POSICIONES_LINEAS,bertram
 
 from Sounds import *
 
@@ -33,7 +33,7 @@ if __name__=="__main__":
 
 
 #Creación de ventana + ícono de la misma
-Ventana=pg.display.set_mode((Ancho_pantalla, Alto_pantalla))
+Ventana=pg.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 pg.display.set_icon(Icono)
     
 
@@ -69,7 +69,7 @@ goombas.add(nuevoEnemigo)
 
 
 #Magos
-nuevoMago= Mago(905, 320)
+nuevoMago= Mago(905, 340)
 magos.add(nuevoMago)
 
 
@@ -134,22 +134,24 @@ nuevaMontania= Decoracion(bloques["Montanias"][1], nuevaMontania.rect.right, 360
 bloquesDecoracion.add(nuevaMontania)
 
 #Nubes
-nuevaNube= Decoracion(bloques["Nubes"][0], 300, 50)
+nuevaNube= Decoracion(bloques["Nubes"][0], 300, 150)
 bloquesDecoracion.add(nuevaNube)
 
-nube_2= Decoracion(bloques["Nubes"][1], 500, 50)
+nuevaNube= Decoracion(bloques["Nubes"][1], 500, 150)
 bloquesDecoracion.add(nuevaNube)
 
 #Árboles
 arbol= Decoracion(bloques["Arbol"], 300, 350)
 bloquesDecoracion.add(arbol)
 
+#Iniciar música de fondo
 pg.mixer.music.play()
+
 #========================== Bucle principal ===========================#
 
 while True:
 
-    Ventana.fill(Azul)
+    Ventana.fill(AZUL)
     
     for eventos in pg.event.get():
 
@@ -184,13 +186,19 @@ while True:
 
 
     #Mostrando texto
-    mostrarTexto(Ventana, bertram, "TIME", 30, Blanco, 10, 10)
-    mostrarTexto(Ventana, bertram, str(int(tiempo)), 25, Blanco, 20, 40)
-    mostrarTexto(Ventana, bertram, "SCORE", 30, Blanco, 870, 10)
-    mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion).zfill(5), 25, Blanco, 900, 40)
+    pg.draw.rect(Ventana,(0,0,0), (350,5,325,53))
+
+    for x in range(4):
+
+        pg.draw.line(Ventana, ROJO, (POSICIONES_LINEAS[x][0], POSICIONES_LINEAS[x][1]), ( POSICIONES_LINEAS[x][2], POSICIONES_LINEAS[x][3]), 3)
+
+    mostrarTexto(Ventana, bertram, "TIME", 25, BLANCO, 370, 23)
+    mostrarTexto(Ventana, bertram, str(int(tiempo)), 25, BLANCO, 430, 23)
+    mostrarTexto(Ventana, bertram, "SCORE", 25, BLANCO, 525, 23)
+    mostrarTexto(Ventana, bertram, str(personajePrincipal.puntuacion).zfill(5), 25, BLANCO, 605, 23)
 
     tiempo-=.05
-    
+
 
 #======================================================================================================
 
@@ -228,7 +236,7 @@ while True:
     #Movimiento y ataque del mago    
     if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200) and not personajePrincipal.muerte:
 
-        if nuevoMago.rect.y == 320 and nuevoMago.comprobarMovimiento():
+        if nuevoMago.rect.y == 340 and nuevoMago.comprobarMovimiento():
 
             nuevoMago.inicio= pg.time.get_ticks()
             nuevoMago.movimiento= True
@@ -291,38 +299,24 @@ while True:
 
     if colisionMago:
 
-        if personajePrincipal.rect.bottom < nuevoMago.rect.centery:
+        if nuevoMago.muerte | personajePrincipal.muerte:
 
-            if nuevoMago.muerte | personajePrincipal.muerte:
-
-                pass
-
-            else:
-               
-               nuevoMago.muerte= True
-
-               #controla inicio de la muerte para contar 2 segundos
-               nuevoMago.inicio= pg.time.get_ticks()
+            pass
 
         else:
-
-            if personajePrincipal.muerte | nuevoMago.muerte:
-
-                pass
-
-            else:
-
-                personajePrincipal.muerte= True
-                personajePrincipal.inicio= pg.time.get_ticks()
+               
+            personajePrincipal.muerte= True
+            personajePrincipal.inicio= pg.time.get_ticks()
 
 
+    #Colisiones del proyectil mientrás esté activo
 
-    #Colisión del enemigo con proyectil
     if personajePrincipal.activo:
 
         colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, goombas, False)
         proyectilMago= pg.sprite.spritecollide(nuevoProyectil, magos, False)
         proyectilTuberia= pg.sprite.spritecollide(nuevoProyectil, tuberias, False)
+        proyectilBonus= pg.sprite.spritecollide(nuevoProyectil, bloquesBonus, False)
 
         if colisionProyectil:
 
