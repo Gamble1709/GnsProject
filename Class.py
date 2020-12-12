@@ -40,7 +40,7 @@ class personaje(pg.sprite.Sprite):
         self.aumento=-30
 
         #Activa el salto del personaje
-        self.Saltar= False
+        self.saltar= False
 
         #Controlar velocidad mientras salta
         self.velocidad=2
@@ -68,192 +68,204 @@ class personaje(pg.sprite.Sprite):
         self.rect.y= 379
 
 
-    def Movimiento(self):
+    def update(self):
 
         global Tecla
 
         #Controlar eventos del teclado
         Tecla=pg.key.get_pressed()
 
+        if not self.muerte:
 
-        #Margenes de movimiento
+            #Margenes de movimiento
 
-        if self.rect.x <=0:
+            if self.rect.x <=0:
 
-            self.rect.x=1
-            
+                self.rect.x=1
+                
 
-        elif self.rect.x >=950:
-            
-            self.rect.x=950
+            elif self.rect.x >=950:
+                
+                self.rect.x=950
 
 
 
-        #Movimiento
+            #Movimiento
 
-        if Tecla[K_d]:
+            if Tecla[K_d]:
 
-            #Evitar movimiento mientras se ejecute el salto
-            if self.Saltar:
+                #Evitar movimiento mientras se ejecute el salto
+                if self.saltar:
 
-                pass
+                    pass
 
-            #Salto combinado
-            elif Tecla[K_d] and Tecla[K_w]:
+                #Salto combinado
+                elif Tecla[K_d] and Tecla[K_w]:
 
-                if not self.Saltar: 
+                    if not self.saltar: 
+
+                        jump.play()
+
+                    self.rect.x+=2
+                    self.saltar=True
+
+
+                #Evitar movimiento mientras dispara
+                if self.ataque:
+
+                    pass
+
+
+                #Caminar derecha 
+                else:
+
+                    self.rect.x +=10
+                    
+                    if self.pasos >3:
+
+                        self.pasos=0
+                        
+
+                    if self.francotirador:
+
+                        self.image= movimiento["sniperDer"][self.pasos]
+
+                        self.pasos+=1
+
+                        self.Dir=0
+
+
+                    else:
+                        
+                        self.image= movimiento["Derecha"][self.pasos]
+
+                        self.pasos+=1
+
+                        self.Dir=0
+
+
+
+            #izquierda
+
+            elif Tecla[K_a]:
+
+                #Evitar movimiento mientras se ejecute el salto
+                if self.saltar:
+
+                    pass
+
+                #Salto combinado
+                elif Tecla[K_a] and Tecla[K_w]:
+                    
+                    if not self.saltar:
+
+                        jump.play()
+
+                    self.rect.x-=2
+                    self.saltar=True
+
+
+                #Evitar movimiento mientras dispara
+                if self.ataque:
+
+                    pass
+                
+
+                #Caminar Izquierda
+                else:
+                    
+                    self.rect.x -=10
+
+         
+                    if self.pasos > 3:
+                        
+                        self.pasos=0
+
+
+                    if self.francotirador:
+
+                        self.image= movimiento["sniperIzq"][self.pasos]
+
+                        self.pasos+=1
+
+                        self.Dir=1
+
+                    
+                    else:
+                        self.image= movimiento["Izquierda"][self.pasos]
+
+                        self.pasos+=1
+
+                        self.Dir=1
+
+
+
+            #Activar salto
+            elif Tecla[K_w]:
+                
+                if not self.saltar:
 
                     jump.play()
 
-                self.rect.x+=2
-                self.Saltar=True
 
+                if self.caida:
 
-            #Evitar movimiento mientras dispara
-            if self.ataque:
+                    pass
 
-                pass
-
-
-            #Caminar derecha 
-            else:
-
-                self.rect.x +=10
-                
-                if self.pasos >3:
-
-                    self.pasos=0
+                else:
                     
+                    self.saltar= True
+
+                     
+            #Quieto
+            else:
 
                 if self.francotirador:
 
-                    self.image= movimiento["sniperDer"][self.pasos]
+                    if self.Dir == 0:
 
-                    self.pasos+=1
+                        self.image= movimiento["Quieto"][self.Dir+2]
 
-                    self.Dir=0
+
+                    else:
+
+                        self.image= movimiento["Quieto"][self.Dir+2]
 
 
                 else:
                     
-                    self.image= movimiento["Derecha"][self.pasos]
-
-                    self.pasos+=1
-
-                    self.Dir=0
+                    self.image= movimiento["Quieto"][self.Dir]
 
 
+            #Ataque
+            if Tecla[K_SPACE]:
 
-        #izquierda
+                if not self.activo and self.francotirador:
 
-        elif Tecla[K_a]:
+                    shoot.play()
 
-            #Evitar movimiento mientras se ejecute el salto
-            if self.Saltar:
-
-                pass
-
-            #Salto combinado
-            elif Tecla[K_a] and Tecla[K_w]:
-                
-                if not self.Saltar:
-
-                    jump.play()
-
-                self.rect.x-=2
-                self.Saltar=True
-
-
-            #Evitar movimiento mientras dispara
-            if self.ataque:
-
-                pass
-            
-
-            #Caminar Izquierda
-            else:
-                
-                self.rect.x -=10
-
-     
-                if self.pasos > 3:
-                    
-                    self.pasos=0
-
-
-                if self.francotirador:
-
-                    self.image= movimiento["sniperIzq"][self.pasos]
-
-                    self.pasos+=1
-
-                    self.Dir=1
+                    #Activamos ataque
+                    self.ataque=True
+                    self.generar=True
 
                 
-                else:
-                    self.image= movimiento["Izquierda"][self.pasos]
+                if self.activo:
 
-                    self.pasos+=1
-
-                    self.Dir=1
+                    pass
 
 
+        #Ejecutar Salto
+        if self.saltar:
 
-        #Activar salto
-        elif Tecla[K_w]:
-            
-            if not self.Saltar:
-
-                jump.play()
+            self.salto()
 
 
-            if self.caida:
+        #Ejecutar disparo
 
-                pass
+        if self.ataque:
 
-            else:
-                
-                self.Saltar= True
+            self.disparar()
 
-                 
-        #Quieto
-        else:
-
-            if self.francotirador:
-
-                if self.Dir == 0:
-
-                    self.image= movimiento["Quieto"][self.Dir+2]
-
-
-                else:
-
-                    self.image= movimiento["Quieto"][self.Dir+2]
-
-
-            else:
-                
-                self.image= movimiento["Quieto"][self.Dir]
-
-
-        #Ataque
-        if Tecla[K_SPACE]:
-
-            if not self.activo and self.francotirador:
-
-                shoot.play()
-            
-            if self.activo:
-
-                pass
-
-
-            elif self.francotirador:
-            
-                #Activamos ataque
-                self.ataque=True
-                self.generar=True
-                
 
         
     def salto(self):
@@ -320,7 +332,6 @@ class personaje(pg.sprite.Sprite):
             self.ataque=False
 
 
-
         else:
             
             #Dirección
@@ -369,8 +380,10 @@ class Proyectil(pg.sprite.Sprite):
         self.dir=0
 
 
-    def mover(self):
-        
+    def update(self, personaje):
+
+        self.comprobarPosicion(personaje)
+
         if self.dir == -20:
 
             self.image= proyectil[1]
@@ -378,11 +391,12 @@ class Proyectil(pg.sprite.Sprite):
         self.rect.x+=self.dir
     
 
-    def comprobarPosicion(self):
+    def comprobarPosicion(self, personaje):
 
         if self.rect.x > 950 or self.rect.x < 0:
 
             self.kill()
+            personaje.activo=False
             return True
 
         else:
@@ -398,7 +412,6 @@ class Enemigo(pg.sprite.Sprite):
         super().__init__()
 
         #Gravedad
-        self.caida=3
         self.caer=True
 
         #Dibujar cuadros
@@ -421,46 +434,63 @@ class Enemigo(pg.sprite.Sprite):
         self.rect.y =y
 
         #controlar rebote por velocidad o velocidad del enemigo
-        self.Velocidad=3
+        self.velocidad=3
 
         #controlar tiempo de cambio entre sprites o cuadros
-        self.Contador=0
+        self.contador=0
 
         
 
-    def mover(self):
+    def update(self):
+
+        if not self.muerte:
         
-        self.rect.x-= self.Velocidad
-        self.image= self.imagen["Goomba"][self.Pasos]
+            self.rect.x-= self.velocidad
+            self.image= self.imagen["Goomba"][self.Pasos]
 
-        self.Contador+=1
+            self.contador+=1
 
-        if self.Contador ==10:
-            self.Pasos+=1
-            self.Contador=0
+            if self.contador ==10:
+                self.Pasos+=1
+                self.contador=0
 
-        if self.Pasos > self.maximosPasos:
-            self.Pasos=0
+            if self.Pasos > self.maximosPasos:
+                self.Pasos=0
 
-        """Si se desea usar rebote
+            """Si se desea usar rebote
 
-        if self.rect.x < 0:
-            self.Velocidad=-3
-
-
-        elif self.rect.x > 950:
-            self.Velocidad=3
-
-        """
+            if self.rect.x < 0:
+                self.Velocidad=-3
 
 
-    def Caer(self):
+            elif self.rect.x > 950:
+                self.Velocidad=3
 
-        self.rect.y+= self.caida
+            """
+
+            #Si está en el aire hacemos que comienze a caer 
+            if self.caer:
+
+                self.caida()
+
+            #Si sale de la pantalla se elimina
+            if self.rect.x < 0:
+
+                self.kill()
+
+        else:
+
+            self.tiempoDeMuerte()
+
+
+    def caida(self):
+
+        self.rect.y+= 3 
 
 
     def tiempoDeMuerte(self):
 
+        self.velocidad=0
         self.image= enemigos["Goomba"][2]
         self.ahora= pg.time.get_ticks()
 
@@ -492,14 +522,27 @@ class Mago(Enemigo):
         #Ataque
         self.invocar= False
 
+        #Evita que se generen múltiples enemigos
+        self.invocado= False
+
         #Variable de prueba
         self.tiempo=0
         self.accion=False
 
 
+    def update(self):
+
+        if self.muerte:
+
+            self.tiempoDeMuerte()
+
+
     def mover(self):
 
         if self.rect.y > 230 and not self.atacar(pg.time.get_ticks()):
+
+            #Evita que se generen múltiples enemigos
+            self.invocado= False
 
             self.rect.y-= 3 
             self.inicio= pg.time.get_ticks()
@@ -543,11 +586,23 @@ class Mago(Enemigo):
         
         elif ahora - self.inicio >= 3000: 
 
-            self.invocar=True
+            #Si no ha invocado el enemigo, hacemos que lo invoque
+            if not self.invocado and not self.invocar:
+
+                self.invocar= True
+                self.invocado= True
+
+            #Si ya fue invocado, evitamos que genere uno nuevo
+            else:
+
+                self.invocar= False
+
+            
             self.rect.x= 905
             self.image= self.imagen["Mago"][0]
             self.retraso= pg.time.get_ticks()
             return True
+
 
         else:
 
@@ -556,7 +611,7 @@ class Mago(Enemigo):
 
     def tiempoDeMuerte(self):
 
-        #self.image= enemigos["Mago"][2]
+        self.image= enemigos["Mago"][3]
         self.ahora= pg.time.get_ticks()
 
         if (self.ahora - self.inicio > 2000):
@@ -564,15 +619,57 @@ class Mago(Enemigo):
             self.kill()
 
         
+    
+class Caracol(pg.sprite.Sprite):
+
+    def __init__(self, x, y, personaje):
+
+        super().__init__()
+        
+        if personaje.rect.x > x:
+
+            self.image= enemigos["Caracol"][0]
+
+        else:
+
+            self.image= enemigos["Caracol"][1]
+
+        self.rect= self.image.get_rect()
+        self.rect.x=x
+        self.rect.y=y
+
+        self.inicio= 0
+        self.muerte= False
+
+    def update(self, personaje):
+
+        if not self.muerte:
+        
+            if personaje.rect.x < self.rect.x - 3:
+
+                self.rect.x -= 3
+                self.image= enemigos["Caracol"][1]
+
+            else:
+
+                self.rect.x += 3
+                self.image= enemigos["Caracol"][0]
 
 
+    def tiempoDeMuerte(self):
 
+        self.ahora= pg.time.get_ticks()
+
+        if self.ahora - self.inicio >= 3000:
+
+            self.kill()     
 
 
 #Clase para los bloques
 class Bloque(pg.sprite.Sprite):
     
     def __init__(self, imagen, posX, posY): 
+        
         super().__init__()
 
         self.image= imagen
@@ -617,7 +714,16 @@ class Bonus(Bloque):
 
         super().__init__(imagen, posX, posY)
         
+        self.rect= self.image.get_rect()
+        self.rect.x= posX
+        self.rect.y=posY
         self.pixeles=1
+
+        #Mostrar animación
+        self.animacion= False
+        
+        #Evita que se ejecute varias veces
+        self.activado= False
 
 
     def mover(self, inicio):
