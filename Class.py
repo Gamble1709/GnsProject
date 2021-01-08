@@ -488,6 +488,12 @@ class Enemigo(pg.sprite.Sprite):
         self.rect.y+= 3 
 
 
+    def iniciarMuerte(self):
+
+        self.inicio= pg.time.get_ticks()
+        self.muerte= True
+
+
     def tiempoDeMuerte(self):
 
         self.velocidad=0
@@ -506,7 +512,7 @@ class Mago(Enemigo):
 
         super().__init__(x, y)
 
-        self.image= self.imagen["Mago"][0]
+        self.image= self.imagen["Mago"][0][0]
         self.rect= self.image.get_rect()
         self.rect.x=x
         self.rect.y=y
@@ -514,10 +520,10 @@ class Mago(Enemigo):
         self.movimiento=False
 
         #Control de ataque
-        self.conteo=0
-        self.bandera=False
+        self.numeroImagenes=0
         self.inicio=0
         self.retraso=0 
+        self.tiempo=1000
 
         #Ataque
         self.invocar= False
@@ -526,19 +532,31 @@ class Mago(Enemigo):
         self.invocado= False
 
         #Variable de prueba
-        self.tiempo=0
         self.accion=False
+
+        self.imagenesMuerte=0 #controlar número de imagenes de muerte
 
 
     def update(self):
 
         if self.muerte:
 
+            if self.movimiento:
+
+                self.movimiento= False
+
+            #Sí la imagen de muerte es 6 significa que apenas fue atacado, por lo que iniciamos el tiempo de control
+            
+            if self.imagenesMuerte == 0:
+
+                self.tiempo=1000
+
             self.tiempoDeMuerte()
 
 
     def mover(self):
 
+        #Sí aún no ha llegado al top de la tubería y además sabemos que no está bajando, hacemos que suba
         if self.rect.y > 230 and not self.atacar(pg.time.get_ticks()):
 
             #Evita que se generen múltiples enemigos
@@ -547,16 +565,20 @@ class Mago(Enemigo):
             self.rect.y-= 3 
             self.inicio= pg.time.get_ticks()
 
+        # y cuando retorne verdadero comenzamos a bajar
         elif self.atacar(pg.time.get_ticks()):
 
-            if self.rect.y < 340:
+            #Mientras no lleguemos a la posición de origen, bajamos
+            if self.rect.y < 352:
 
                 self.rect.y+= 3
 
+            #Sí ya llegamos, evitamos el movimiento
             else:
 
                 self.movimiento= False
 
+        #Llamamos el ataque + invocación
         else:
 
             self.atacar(pg.time.get_ticks())
@@ -573,18 +595,20 @@ class Mago(Enemigo):
 
     def atacar(self, ahora):
 
-        if ahora - self.inicio >= 1000 and ahora - self.inicio <= 2000:
+        if ahora - self.inicio >= self.tiempo and ahora - self.inicio <= (self.tiempo + 300):
 
-            self.image= self.imagen["Mago"][1]
-            return False
+            #Aumentamos el número de imagen de ataque pero antes comprobamos que estemos entre el rango de tiempo
+            if self.tiempo <= 2500:
+                
+                self.image= enemigos["Mago"][0][self.numeroImagenes]
+                self.numeroImagenes+=1
+                self.tiempo+=300
 
-        elif ahora - self.inicio >= 2000 and ahora - self.inicio <= 3000: 
-            self.rect.x = 885 
-            self.image= self.imagen["Mago"][2]
-            return False
 
-        
-        elif ahora - self.inicio >= 3000: 
+        if ahora - self.inicio > 2800: 
+
+            #Reinciamos el tiempo para cuando vuelva a atacar
+            self.tiempo= 1000
 
             #Si no ha invocado el enemigo, hacemos que lo invoque
             if not self.invocado and not self.invocar:
@@ -598,25 +622,32 @@ class Mago(Enemigo):
                 self.invocar= False
 
             
-            self.rect.x= 905
-            self.image= self.imagen["Mago"][0]
+            #self.rect.x= 908
+            self.image= self.imagen["Mago"][0][0]
             self.retraso= pg.time.get_ticks()
+            self.numeroImagenes=0
             return True
 
 
-        else:
-
-            return False
+        return False
     
 
     def tiempoDeMuerte(self):
 
-        self.image= enemigos["Mago"][3]
         self.ahora= pg.time.get_ticks()
 
-        if (self.ahora - self.inicio > 2000):
+        #Controla el tiempo que se mostrará cada imagen
+        if (self.ahora - self.inicio > self.tiempo) and self.ahora - self.inicio < (self.tiempo + 400):
 
-            self.kill()
+            if self.tiempo < 3400:
+
+                self.image= enemigos["Mago"][1][self.imagenesMuerte]
+                self.imagenesMuerte+=1
+                self.tiempo+=400
+
+            else:
+
+                self.kill()
 
         
     
@@ -628,15 +659,21 @@ class Caracol(pg.sprite.Sprite):
         
         if personaje.rect.x > x:
 
-            self.image= enemigos["Caracol"][0]
+            self.image= enemigos["Prueba"][0][0]
 
         else:
 
-            self.image= enemigos["Caracol"][1]
+            self.image= enemigos["Prueba"][1][0]
 
         self.rect= self.image.get_rect()
         self.rect.x=x
-        self.rect.y=y
+        #self.rect.y=y
+        self.rect.bottom= y
+        self.cuadros= 0
+        self.direccion=0
+
+        self.escondido= False
+        self.tiempoEscondido=0
 
         self.inicio= 0
         self.muerte= False
@@ -644,16 +681,49 @@ class Caracol(pg.sprite.Sprite):
     def update(self, personaje):
 
         if not self.muerte:
-        
-            if personaje.rect.x < self.rect.x - 3:
 
-                self.rect.x -= 3
-                self.image= enemigos["Caracol"][1]
+            if self.cuadros > 8:
+
+                self.cuadros=0
+        
+            #Verificamos sí la posición x del jugador es menor o mayor a la del caracol para así moverlo
+
+            if not self.escondido:
+
+                if personaje.rect.x < self.rect.x - 3:
+
+                    self.direccion=1
+                    self.rect.x -= 3
+                    self.image= enemigos["Prueba"][self.direccion][self.cuadros]
+                    self.cuadros+=1
+
+                else:
+
+                    self.direccion=0
+                    self.rect.x += 3
+                    self.image= enemigos["Prueba"][self.direccion][self.cuadros]
+                    self.cuadros+=1
 
             else:
 
-                self.rect.x += 3
-                self.image= enemigos["Caracol"][0]
+                self.esconderse()
+
+
+        else:
+
+            self.tiempoDeMuerte()
+
+
+    def esconderse(self):
+
+        ahora= pg.time.get_ticks()
+
+        if ahora - self.tiempoEscondido >= 3000:
+
+            self.escondido= False
+
+        self.image= enemigos["Prueba"][self.direccion][9]
+
 
 
     def tiempoDeMuerte(self):
@@ -663,6 +733,12 @@ class Caracol(pg.sprite.Sprite):
         if self.ahora - self.inicio >= 3000:
 
             self.kill()     
+
+    
+    def iniciarMuerte(self):
+
+        self.inicio= pg.time.get_ticks()
+        self.muerte=True
 
 
 #Clase para los bloques
@@ -693,6 +769,18 @@ class Potenciador(Bloque):
 
         #Caída
         self.caida=True
+        
+
+
+    def update(self):
+
+        if self.mover:
+
+            self.moverPotenciador()
+
+        if self.caida:
+
+            self.caer()
 
 
     def moverPotenciador(self):
@@ -719,11 +807,28 @@ class Bonus(Bloque):
         self.rect.y=posY
         self.pixeles=1
 
+        #Variable que obtendrá el inicio de un evento (en milisegundos)
+        self.inicio=0
+
         #Mostrar animación
         self.animacion= False
         
         #Evita que se ejecute varias veces
         self.activado= False
+
+        #Sí el bloque genera un objeto se activa
+        self.generar= False 
+
+
+
+    def update(self):
+
+        if self.animacion:
+
+            if self.mover(self.inicio):
+
+                self.animacion= False
+                self.generar= True
 
 
     def mover(self, inicio):

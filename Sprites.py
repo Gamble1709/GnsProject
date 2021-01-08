@@ -25,7 +25,6 @@ sniperIzq= os.path.join(carpetaJugador, "Sniper/Izquierda")
 
 
 movimiento={"Quieto": [], "Derecha": [], "Izquierda": [], "Salto": [], "sniperDer": [], "sniperIzq": [], "ataqueDer": [], "ataqueIzq": []}
-
 for x in range(1,5):
 
     archivo= "Mario{}.png".format(x)
@@ -97,17 +96,56 @@ for x in range(1):
 
 #=========================== Sprites Enemigos ===========================
 
-enemigos= {"Goomba": [], "Mago": [], "Caracol": []}
+enemigos= {"Goomba": [], "Mago": [[],[]], "Caracol": [], "Prueba": [[],[]]}
 
 for x in range(3):
 
     archivo= f"Goomba{x}.png"
     enemigos["Goomba"].append(pg.image.load(os.path.join(carpetaGoomba, archivo)))
-    archivo= f"Mago{x}.png"    
-    enemigos["Mago"].append(pg.image.load(os.path.join(carpetaMago, archivo)))
     archivo= f"Caracol{x}.png"
     enemigos["Caracol"].append(pg.image.load(os.path.join(carpetaCaracol, archivo)))
        
 
-enemigos["Mago"].append(pg.image.load(os.path.join(carpetaMago, "Muerte.png")))
+mago= pg.image.load(os.path.join(carpetaMago, "MagoP1.png"))
+cuadrado= mago.get_rect()
+widthImage=  int(cuadrado.w / 6) 
+heightImage= int(cuadrado.h / 2)
 
+
+rect= pg.Rect(0, heightImage + 14, widthImage - 40, heightImage -14)
+enemigos["Mago"][0].append(mago.subsurface(rect))
+rect= pg.Rect(0, 0, widthImage - 40, heightImage -14)
+enemigos["Mago"][1].append(mago.subsurface(rect))
+
+inicio=50
+
+#Recortando imagenes de ataque
+for columna in range(5):
+
+    if columna == 4:
+
+        rect= pg.Rect(inicio + 46, heightImage + 14, widthImage - 20, heightImage -14)
+
+    else:
+
+        rect= pg.Rect(inicio + 46, heightImage + 14, widthImage - 40, heightImage -14)
+
+
+    rect2= pg.Rect(inicio + 46, 0, widthImage - 40, heightImage - 14)
+    inicio+= 46 + 50 
+    enemigos["Mago"][0].append(mago.subsurface(rect))
+    enemigos["Mago"][1].append(mago.subsurface(rect2))
+
+
+caracol= pg.image.load(os.path.join(carpetaCaracol, "Caracol.png")) 
+cuadrado= caracol.get_rect()
+widthImage= int(cuadrado.w / 10)
+heightImage= int(cuadrado.h / 4)
+
+for column in range(10):
+
+    rect= pg.Rect(column * widthImage, 1 * heightImage + 18, widthImage, heightImage - 22)
+    enemigos["Prueba"][0].append(caracol.subsurface(rect))
+
+    rect= pg.Rect(column * widthImage, 3 * heightImage + 18, widthImage, heightImage - 19) 
+    enemigos["Prueba"][1].append(caracol.subsurface(rect))
