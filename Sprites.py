@@ -57,18 +57,21 @@ for x in range(3):
 movimiento["Salto"].append(pg.image.load(os.path.join(carpetaJugador, "Derecha/Salto.png")))
 movimiento["Salto"].append(pg.image.load(os.path.join(carpetaJugador, "Izquierda/Salto.png")))
 
+
 #Modo Sniper
 movimiento["Salto"].append(pg.image.load(os.path.join(sniperDer, "Salto.png")))
 movimiento["Salto"].append(pg.image.load(os.path.join(sniperIzq, "Salto.png")))
 
-#Imágenes de cuando está quieto el jugador
 
+#Imágenes de cuando está quieto el jugador
 movimiento["Quieto"].append(pg.image.load(os.path.join(carpetaJugador,"Derecha/Mario0.png")))
 movimiento["Quieto"].append(pg.image.load(os.path.join(carpetaJugador,"Izquierda/Mario0.png")))
 
-#Modo Sniper
+
+#Quieto en modo Sniper
 movimiento["Quieto"].append(pg.image.load(os.path.join(carpetaJugador,"Sniper/Derecha/Mario0.png")))
 movimiento["Quieto"].append(pg.image.load(os.path.join(carpetaJugador,"Sniper/Izquierda/Mario0.png")))
+
 
 #Imágen de muerte
 movimiento["Muerte"]=pg.image.load("Imagenes/Personaje/Muerte.png")
@@ -96,14 +99,14 @@ for x in range(1):
 
 #=========================== Sprites Enemigos ===========================
 
-enemigos= {"Goomba": [], "Mago": [[],[]], "Caracol": [], "Prueba": [[],[]]}
+enemigos= {"Goomba": [], "Mago": [[],[]], "Caracol": [[],[],[]], "Prueba": []} 
 
 for x in range(3):
 
     archivo= f"Goomba{x}.png"
     enemigos["Goomba"].append(pg.image.load(os.path.join(carpetaGoomba, archivo)))
-    archivo= f"Caracol{x}.png"
-    enemigos["Caracol"].append(pg.image.load(os.path.join(carpetaCaracol, archivo)))
+    #archivo= f"Caracol{x}.png"
+    #enemigos["Caracol"].append(pg.image.load(os.path.join(carpetaCaracol, archivo)))
        
 
 mago= pg.image.load(os.path.join(carpetaMago, "MagoP1.png"))
@@ -137,15 +140,30 @@ for columna in range(5):
     enemigos["Mago"][1].append(mago.subsurface(rect2))
 
 
-caracol= pg.image.load(os.path.join(carpetaCaracol, "Caracol.png")) 
+#Obteniendo sprite del caracol
+caracol= pg.image.load(os.path.join(carpetaCaracol, "prueba.png")) 
 cuadrado= caracol.get_rect()
-widthImage= int(cuadrado.w / 10)
-heightImage= int(cuadrado.h / 4)
 
-for column in range(10):
+#Ambas variables nos ayudarán a saber el tamaño de cada Sprite
+widthImage= int(cuadrado.w / 9) #La imagen tiene 9 columnas
+heightImage= int(cuadrado.h / 2) #y tiene dos filas
 
-    rect= pg.Rect(column * widthImage, 1 * heightImage + 18, widthImage, heightImage - 22)
-    enemigos["Prueba"][0].append(caracol.subsurface(rect))
+for column in range(9):
+        
+    rect= pg.Rect(column * widthImage, 0, widthImage - 9, heightImage)
+    enemigos["Caracol"][0].append(caracol.subsurface(rect))
 
-    rect= pg.Rect(column * widthImage, 3 * heightImage + 18, widthImage, heightImage - 19) 
-    enemigos["Prueba"][1].append(caracol.subsurface(rect))
+    rect= pg.Rect(column * widthImage, heightImage, widthImage, heightImage) 
+    enemigos["Caracol"][1].append(caracol.subsurface(rect))
+    
+
+#Obteniendo sprite del caparazón
+caparazon= pg.image.load(os.path.join(carpetaCaracol, "Caparazón.png"))
+cuadrado= caparazon.get_rect()
+height= int(cuadrado.h / 2)
+
+for column in range(2):
+    
+    rect= pg.Rect(0, height * column, cuadrado.w, height)
+    enemigos["Caracol"][2].append(caparazon.subsurface(rect))
+

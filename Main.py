@@ -12,7 +12,7 @@ from Constants import ANCHO_PANTALLA, ALTO_PANTALLA, AZUL, BLANCO, ROJO, POSICIO
 
 from Sounds import *
 
-from Functions import mostrarTexto, mostrarMenu 
+from Functions import mostrarTexto, mostrarMenu, moverCamara 
 
 
 #Iniciando Pygame
@@ -22,12 +22,12 @@ if __name__=="__main__":
 
 
 #Creación de ventana + ícono de la misma
-VENTANA=pg.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
+VENTANA= pg.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 pg.display.set_icon(Icono)
     
 
 #FPS
-Fps=30
+Fps= 30
 Reloj= pg.time.Clock()
 
 #Tiempo del juego
@@ -49,38 +49,36 @@ proyectiles= pg.sprite.Group()
 #======================Instanciaciones==========================00
 
 #Creando bloques en orden
-distanciaX=0
-distanciaY=447
+distanciaX= 0
 
+#el ancho de la image es 46, lo usaremos para calcular la distancia entre bloques
 for x in range(75):
-    sueloBasico= Bloque(bloques["Suelo"], distanciaX, distanciaY)
-    bloquesSimples.add(sueloBasico)
-    distanciaX+=45
 
+    sueloBasico= Bloque(bloques["Suelo"], 46 * x, 447)     
+    bloquesSimples.add(sueloBasico)
+    distanciaX+= 45
 
 #Creación de bloques vacíos (solo por decoración)
 
-distanciaX=0
-distanciaY+=23
-cont=0
+distanciaX= 0
+distanciaY= 470
 
-for x in range(80):
+for x in range(150):
     
-    bloque=Decoracion(bloques["Suelo"],distanciaX, distanciaY)
+    bloque= Decoracion(bloques["Suelo"], distanciaX, distanciaY)
     bloquesDecoracion.add(bloque)
 
-    distanciaX+=25
-    cont+=1
+    distanciaX+= 46
 
-    if cont==40:
+    if x == 75:
 
-        distanciaY+=23
-        distanciaX=0
+        distanciaY+= 23
+        distanciaX= 0
 
 
 
 #Tuberías
-nuevaTuberia= Bloque(bloques["Tuberia"], 900, 320)
+nuevaTuberia= Bloque(bloques["Tuberia"], 900, 310)
 tuberias.add(nuevaTuberia)
 
 #Montañas
@@ -104,7 +102,7 @@ bloquesDecoracion.add(arbol)
 
 
 #Instanciando personajePrincipalPrincipal principal
-personajePrincipal=personaje()
+personajePrincipal= Personaje()
 sprites.add(personajePrincipal)
 
 
@@ -124,14 +122,8 @@ bloquesBonus.add(bonus)
 
 #Instanciación de los potenciadores
 #hongos= Potenciador(desarrollador["Hongo"][0], bonus.rect.x, bonus.rect.y -3)
-generacion=False
-
 
 #Crear animación de subida y bajada bloque bonus (Pronto se pondrá en la clase para borrar este espacio)
-animacionbonus=False
-subir=-8
-animacion=False
-
 
 #Iniciar Menú
 while not mostrarMenu(VENTANA):
@@ -143,7 +135,7 @@ while not mostrarMenu(VENTANA):
 
 
 #Iniciar música de fondo
-pg.mixer.music.play()
+#pg.mixer.music.play()
 
 
 #========================== Bucle principal ===========================#
@@ -169,7 +161,9 @@ while True:
     bloquesBonus.update()
     tuberias.update()
     proyectiles.update(personajePrincipal)
-    magos.update()
+    magos.update(personajePrincipal)
+
+
     caracoles.update(personajePrincipal)
 
 
@@ -198,85 +192,61 @@ while True:
     mostrarTexto(VENTANA, bertram, "SCORE", 25, BLANCO, 525, 23)
     mostrarTexto(VENTANA, bertram, str(personajePrincipal.puntuacion).zfill(5), 25, BLANCO, 605, 23)
 
-    tiempo-=.05
+    tiempo-= .05
 
 #======================================================================================================
 
+    
+    #"Movimiento" de la cámara
+    if personajePrincipal.rect.x >= (ANCHO_PANTALLA / 2):
+
+        moverCamara([goombas, magos, caracoles, tuberias, bloquesSimples, bloquesDecoracion,
+            potenciadores, bloquesBonus], personajePrincipal) 
+
+    #Si no está la cámara en "movimiento" cambiamos este atributo, si se quita el jugador no se moverá
+    else: 
+
+        if personajePrincipal.camara: personajePrincipal.camara= False
+
+
     #Generando proyectiles
-    if personajePrincipal.generar and personajePrincipal.activo == False:
+
+    #Vericamos que el que ataque del personaje haya terminado y que esté listo para generar un proyectil
+    if personajePrincipal.generar and not personajePrincipal.activo:
         
+        #Hacemos que sea verdadero para saber que ek ataque ha iniciado
         personajePrincipal.activo= True
+
+        #Indicamos que ya no puede generar otro proyectil hasta que acabe el ataque
         personajePrincipal.generar= False
         
-        nuevoProyectil= Proyectil(personajePrincipal.rect.right, personajePrincipal.rect.centery + 5)
+        #Instanciamos el nuevo proyectil
+        nuevoProyectil= Proyectil(personajePrincipal)
 
-        #Hacemos que la variable nuevoProyectil del archivo Collisions contenga el objeto creado, esto para las colisiones
-        Collisions.nuevoProyectil= nuevoProyectil
-
+        #Lo agregamos a su grupo correspondiente
         proyectiles.add(nuevoProyectil)
-
-        #Controla la dirección del proyectil 
-        if personajePrincipal.Dir == 0:
-
-            nuevoProyectil.dir= 20
-
-        else:
-
-            nuevoProyectil.dir= -20
-
-    
-
-    #Movimiento y ataque del mago    
-    if personajePrincipal.rect.right >= (nuevaTuberia.rect.left - 200) and not personajePrincipal.muerte:
-
-        if (nuevoMago.rect.y == 352 and nuevoMago.comprobarMovimiento()) and not nuevoMago.muerte:
-
-            nuevoMago.inicio= pg.time.get_ticks()
-            nuevoMago.movimiento= True
-
-
 
             
 #============================= Colisiones ==================================#
     
+    #Método que se encarga de detectar todas las colisiones 
     Collisions.detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSimples, tuberias,
-            bloquesBonus)
+            bloquesBonus, potenciadores, proyectiles)
+
+
+
+    #Dibuja un cuadrado alrededor del caracol (usado para hacer pruebas debido a un bug que aún está)
     
+    """if caracoles:
 
-
-    #Colisión con Bloque bonus            
-    """colisionBonus= pg.sprite.spritecollide(personajePrincipal, bloquesBonus, False)
-
-    if colisionBonus:
-
-        if personajePrincipal.rect.right < bonus.rect.centerx and personajePrincipal.rect.top < bonus.rect.centery + 5:
-
-            personajePrincipal.rect.right= bonus.rect.left
-
-        if personajePrincipal.rect.left > bonus.rect.centerx and personajePrincipal.rect.top < bonus.rect.centery - 5:
-
-            personajePrincipal.rect.left= bonus.rect.right
-
-        if personajePrincipal.rect.top > bonus.rect.centery :
-
-            #Esto para que al colisionar baje y no continue subiendo
-            personajePrincipal.rect.y += 10
-            personajePrincipal.aumento=0
-
-            if not bonus.animacion and not bonus.activado:
-                
-                bonus.animacion=True
-                bonus.activado= True
-                inicio= pg.time.get_ticks()
-
-        if personajePrincipal.rect.bottom < bonus.rect.centery - 8:
-
-            personajePrincipal.saltar=False
-            personajePrincipal.rect.bottom=bonus.rect.top + 1
-            personajePrincipal.aumento= -30
-            """
+        pg.draw.rect(VENTANA, ROJO, (caracoles.sprites()[0].rect.x + caracoles.sprites()[0].rect.w, caracoles.sprites()[0].rect.y, caracoles.sprites()[0].rect.w, caracoles.sprites()[0].rect.h))"""
         
     
+
+        
+#================================= Instanciación de otros objetos ===============================
+
+    #Detecta si se activó la generación de un power up y lo instancia
     for bonus in bloquesBonus:
 
         if bonus.generar:
@@ -289,135 +259,25 @@ while True:
 
 
 
-    if potenciadores:
-    
-        for arma in potenciadores:
-
-            #Colisión del arma con el bloque bonus
-            armaBonus= pg.sprite.spritecollide(arma, bloquesBonus, False)
-
-            if armaBonus:
-
-                #Evitar que el sprite traspase el bloque bonus
-                if arma.rect.bottom >= armaBonus[0].rect.top:
-
-                    arma.rect.bottom = armaBonus[0].rect.top+3
-                    arma.caida=False 
-
-
-
-            #Si no hay colision es que el objeto está cayendo
-            else: 
-                    
-                arma.caida=True
-
-
-            #Colisión del arma con el suelo
-            armaSuelo= pg.sprite.spritecollide(arma, bloquesSimples, False)
-
-            #Si hay colisión del arma con el suelo
-            if armaSuelo:
-
-                #Si la posición del arma en Y es mayor a la del bloque, la cambiamos para que no traspase el bloque
-                if arma.rect.bottom >= armaSuelo[0].rect.top:
-                
-                    arma.rect.bottom= armaSuelo[0].rect.top+3
-                    arma.caida=False
-
-            else:
-
-                arma.caida= True
-    
-
-    #Colisión del enemigo con el suelo
-    colisionSueloEnemigo= pg.sprite.spritecollide(nuevoEnemigo, bloquesSimples, False)
-
-    if colisionSueloEnemigo:
-        
-        if nuevoEnemigo.rect.bottom >= sueloBasico.rect.top:
-
-            nuevoEnemigo.caer=False 
-            nuevoEnemigo.rect.bottom = sueloBasico.rect.top+1
-
-
-    else:
-
-        nuevoEnemigo.caer=True
-
-
-    #Colisión con potenciadores
-    personajeArmas= pg.sprite.spritecollide(personajePrincipal, potenciadores, True)
-
-    if personajeArmas:
-
-        personajePrincipal.puntuacion+=1000
-        personajePrincipal.francotirador=True
-        nuevaArma.kill()
-
-
-
-    #Colisión tubería
-    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, tuberias, False)
-
-    if colisionTuberia:
-
-        #Comprobamos si está encima de la tubería
-        if personajePrincipal.rect.bottom < nuevaTuberia.rect.centery - 10:
-
-            personajePrincipal.rect.bottom = nuevaTuberia.rect.top +1
-            personajePrincipal.saltar=False
-            personajePrincipal.aumento= -30
-
-        
-        #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
-        else:
-            
-            if personajePrincipal.rect.right >= nuevaTuberia.rect.left:
-
-                 personajePrincipal.rect.right= nuevaTuberia.rect.left
-        
-
+    #Detecta si el mago invocó a un nuevo caracol y lo instancia
     if nuevoMago.invocar:
         
-        nuevoCaracol= Caracol(400, sueloBasico.rect.top, personajePrincipal)
+        nuevoCaracol= Prueba(personajePrincipal.rect.x - 200, sueloBasico.rect.top - 28)
         caracoles.add(nuevoCaracol)
 
-    try:
-
-        nuevoCaracol.comprobar(personajePrincipal)
-
-    except:
-
-        pass
-
-
-#========================== Movimiento de los personajes ====================================#
-        
-    if nuevoMago.movimiento:
-        nuevoMago.mover()
-
-    #Movimiento de potenciadores
-    if generacion:
-
-        if nuevaArma.mover:
-
-            nuevaArma.moverPotenciador()
-
-        if nuevaArma.caida:
-
-            nuevaArma.caer()
-            
 
 #====================== Otros ============================#
 
-    if not personajePrincipal.saltar and not Collisions.colisionBonus and not Collisions.colisionSuelo and not colisionTuberia:
+    #Verificamos sí el jugador está cayendo
+    if not personajePrincipal.saltar and not Collisions.colisionBonus and not Collisions.colisionSuelo and not Collisions.colisionTuberia:
 
         personajePrincipal.saltar = True
+
+        #A esta variable cuando ejecutamos el salto comenzamos a restarle, si está en 0 los valores serán
+        #negativos y hará que el personaje caiga
         personajePrincipal.aumento=0
         
 
 
     Reloj.tick(Fps)
     pg.display.update()
-
-    

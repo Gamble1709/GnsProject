@@ -49,3 +49,23 @@ def mostrarMenu(ventana):
 
 
 
+def moverCamara(grupos, personajePrincipal):
+
+    personajePrincipal.camara= True
+
+    tecla= pg.key.get_pressed()
+
+    if tecla[K_d]:
+
+        mover= -10
+
+    else:
+
+        mover=0
+
+
+    for grupo in grupos:
+
+        for objeto in grupo:
+
+            objeto.rect.x+= mover  

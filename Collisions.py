@@ -12,12 +12,13 @@ Sabemos que en una lista el índice inicia en 0 y en la lista que retorna la var
 Ahora sabes la razón, por lo que si ves algo como colisionGoomba[0].iniciarMuerte() ya sabes que significa que la variable ColisionGoomba retorna una lista con los objetos tipo GOOMBA que haya encontrado o dependiendo de con quien quieres que colisione un objeto, posteriormente toma ese objeto de la lista y usa su atributo, por lo que si el objeto se llamara primerGoomba, usar la forma anterior es como si escribieramos primerGoomba.iniciarMuerte()"""
 
 
-nuevoProyectil=0
+#nuevoProyectil=0
 
 def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSimples, tuberias, 
-        bloquesBonus):
+        bloquesBonus, potenciadores, proyectiles):
 
-    global colisionSuelo, nuevoProyectil, colisionBonus
+    #Variables que deben ser globales ya que se usan en el archivo Main.py
+    global colisionSuelo, colisionBonus, colisionTuberia
 
     #Creando colisión con enemigos + Muerte del enemigo
     colisionGoomba= pg.sprite.spritecollide(personajePrincipal, goombas, False)
@@ -37,7 +38,7 @@ def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSim
             else:
 
                 personajePrincipal.puntuacion+=500
-                personajePrincipal.aumento=-30
+                personajePrincipal.aumento= -30
                 jump.play()
                 colisionGoomba[0].iniciarMuerte()
 
@@ -53,50 +54,75 @@ def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSim
             #Si el enemigo está vivo y colisiona de forma directa, destruimos el personajePrincipal
             else:
 
+                #Si el personaje está en modo Sniper desactivamos ese modo y no eliminamos al jugador
                 if personajePrincipal.francotirador:
 
                     personajePrincipal.francotirador= False
+
+                    #Eliminamos el enemigo con el que colisionó
                     colisionGoomba[0].iniciarMuerte()
 
                 else:
 
+                    #Indicamos que el personaje va a ser destruido
                     personajePrincipal.muerte=True
+
+                    #Obtenemos el tiempo en que inicia la muerte
                     personajePrincipal.inicio=pg.time.get_ticks()
 
 
 
+    #Colisión del personaje con el caracol
     colisionCaracol= pg.sprite.spritecollide(personajePrincipal, caracoles, False)
 
     if colisionCaracol:
 
-        if colisionCaracol[0].muerte:
+        for caracol in colisionCaracol:
 
-            pass
+            #Verificamos la forma en que colisionó el personaje con el caracol, si la posición Y del 
+            #personaje es mayor a la del caracol entonces es que el jugador saltó sobre él
+            if personajePrincipal.saltar:
 
-        else:
+                caracol.golpes+= 1
+                personajePrincipal.puntuacion+= 200
 
-            if personajePrincipal.rect.bottom < colisionCaracol[0].rect.bottom:
+                #Hacemos que el personaje salte de nuevo para que se muestre que colisionó
+                personajePrincipal.rect.y-= 3
+                personajePrincipal.aumento= -30
 
-                if not colisionCaracol[0].escondido:
+                #Verificamos si el caracol no estaba escondido antes
+                if not caracol.escondido:
 
-                    colisionCaracol[0].escondido=True
-                    colisionCaracol[0].tiempoEscondido= pg.time.get_ticks()
-                    personajePrincipal.aumento= -30
+                    #Si es así, iniciamos el atributo que hace que se esconda el caracol
+                    caracol.escondido= True
 
-                else:
+                    #Obtenemos el tiempo de inicio en que se escondió el caracol
+                    caracol.inicioTiempoEscondido= pg.time.get_ticks()
 
-                    colisionCaracol[0].iniciarMuerte()                    
 
             else:
 
-                if not colisionCaracol[0].escondido:
+                #Verificamos si el caracol estaba escondido, pues de no ser así el personaje será 
+                #destruido pues colisionó de frente con el caracol
+                if not caracol.escondido and not personajePrincipal.muerte:
 
                     personajePrincipal.muerte= True
                     personajePrincipal.inicio= pg.time.get_ticks()
 
+
+                #Si el caracol estaba escondido 
                 else:
 
-                    colisionCaracol[0].iniciarMuerte()
+                    #Solo podrá destruir el personaje al caracol si salta sobre él. si no
+                    #hacemos que choque con él pero que nada pase
+
+                    if not personajePrincipal.saltar:
+
+                        if personajePrincipal.rect.right < caracol.rect.centerx:
+
+                            personajePrincipal.rect.right= caracol.rect.left
+
+                        else: personajePrincipal.rect.left= caracol.rect.right
 
 
 
@@ -114,9 +140,8 @@ def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSim
             if personajePrincipal.francotirador:
 
                 personajePrincipal.francotirador= False
-                colisionMago[0].iniciarMuerte()
-                #nuevoMago.muerte= True
-                #nuevoMago.inicio= pg.time.get_ticks()
+                colisionMago[0].muerte= True
+                colisionMago[0].inicio= pg.time.get_ticks()
 
             else:
                
@@ -128,31 +153,43 @@ def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSim
     #Colisiones del proyectil mientrás esté activo
     if personajePrincipal.activo:
 
-        colisionProyectil= pg.sprite.spritecollide(nuevoProyectil, goombas, False)
-        proyectilMago= pg.sprite.spritecollide(nuevoProyectil, magos, False)
-        proyectilTuberia= pg.sprite.spritecollide(nuevoProyectil, tuberias, False)
-        proyectilBonus= pg.sprite.spritecollide(nuevoProyectil, bloquesBonus, False)
+        proyectil= proyectiles.sprites()[0]
 
-        if colisionProyectil:
+        proyectilGoomba= pg.sprite.spritecollide(proyectil, goombas, False)
+        proyectilMago= pg.sprite.spritecollide(proyectil, magos, False)
+        proyectilCaracol= pg.sprite.spritecollide(proyectil, caracoles, False)
+        proyectilTuberia= pg.sprite.spritecollide(proyectil, tuberias, False)
+        proyectilBonus= pg.sprite.spritecollide(proyectil, bloquesBonus, False)
 
-            personajePrincipal.activo= False
-            nuevoProyectil.kill()
+
+        #Colisión del proyectil con un objeto del grupo goombas 
+        if proyectilGoomba:
+
             colisionProyectil[0].iniciarMuerte()
 
-        if proyectilMago:
+        
+        #Colisión del proyectil con un objeto del grupo magos 
+        if proyectilMago and not proyectilMago[0].muerte:
 
-            if proyectilMago[0].rect.top <= 320:
-
-                personajePrincipal.activo= False
-                nuevoProyectil.kill()
-                proyectilMago[0].iniciarMuerte()
-                personajePrincipal.puntuacion+=1000
+            personajePrincipal.puntuacion+=1000
+            proyectilMago[0].muerte= True
+            proyectilMago[0].inicio= pg.time.get_ticks()
 
 
-        if proyectilTuberia or proyectilBonus:
+        #Colisión del proyectil con objeto del grupo caracoles
+        if proyectilCaracol:
+
+            for caracol in proyectilCaracol:
+
+                #Si el caracol no está muriendo entonces llamamos al método que inicia su muerte
+                if not caracol.muerte: caracol.iniciarMuerte()
+
+
+        #Colisión del proyectil con cualquier objeto
+        if proyectilTuberia or proyectilBonus or proyectilGoomba or proyectilMago or proyectilCaracol:
 
             personajePrincipal.activo= False
-            nuevoProyectil.kill()
+            proyectil.kill()
 
 
    #Condicional que se encarga del tiempo antes de morir y de destruir el objeto
@@ -205,3 +242,111 @@ def detectarColisiones(personajePrincipal, goombas, caracoles, magos, bloquesSim
         personajePrincipal.saltar=False
         personajePrincipal.aumento=-30
         personajePrincipal.rect.bottom= colisionSuelo[0].rect.top+1
+
+
+    #Prueba
+
+    #if colisionCaracol and colisionSuelo:
+
+    #    personajePrincipal.rect.bottom = colisionSuelo[0].rect.top + 3
+
+    if potenciadores:
+    
+        for arma in potenciadores:
+
+            #Colisión del arma con el bloque bonus
+            armaBonus= pg.sprite.spritecollide(arma, bloquesBonus, False)
+
+            if armaBonus:
+
+                #Evitar que el sprite traspase el bloque bonus
+                if arma.rect.bottom >= armaBonus[0].rect.top:
+
+                    arma.rect.bottom = armaBonus[0].rect.top - 3
+                    arma.caida=False 
+
+
+
+            #Si no hay colision es que el objeto está cayendo
+            else: 
+                    
+                arma.caida=True
+
+
+            #Colisión del arma con el suelo
+            armaSuelo= pg.sprite.spritecollide(arma, bloquesSimples, False)
+
+            #Si hay colisión del arma con el suelo
+            if armaSuelo:
+
+                #Si la posición del arma en Y es mayor a la del bloque, la cambiamos para que no traspase el bloque
+                if arma.rect.bottom >= armaSuelo[0].rect.top:
+                
+                    arma.rect.bottom= armaSuelo[0].rect.top+3
+                    arma.caida=False
+
+            else:
+
+                arma.caida= True
+
+
+
+    #Colisión del enemigo con el suelo
+
+    if goombas: #Verificamos que el grupo no esté vacío
+
+        for enemigo in goombas: #Iteramos en el grupo obteniendo cada objeto
+
+            colisionSueloEnemigo= pg.sprite.spritecollide(enemigo, bloquesSimples, False)
+
+            if colisionSueloEnemigo and not enemigo.muerte: #Si hay colisión se retorna una lista con los objetos colisionados. (Verificamos que el enemigo no esté muerto para evitar cambios de posición) 
+                
+                if enemigo.rect.bottom >= colisionSueloEnemigo[0].rect.top:
+
+                    enemigo.caer=False 
+                    enemigo.rect.bottom = colisionSueloEnemigo[0].rect.top + 1
+
+            else:
+
+                enemigo.caer=True
+
+
+
+    #Colisión con potenciadores
+    personajeArmas= pg.sprite.spritecollide(personajePrincipal, potenciadores, True)
+
+    if personajeArmas:
+
+        personajePrincipal.puntuacion+=1000
+        personajePrincipal.francotirador=True
+        #personajeArmas[0].kill()
+
+
+
+    #Colisión tubería
+    colisionTuberia= pg.sprite.spritecollide(personajePrincipal, tuberias, False)
+
+    if colisionTuberia:
+
+        #Comprobamos si está encima de la tubería
+        if personajePrincipal.rect.bottom < colisionTuberia[0].rect.centery - 5:
+
+            personajePrincipal.rect.bottom = colisionTuberia[0].rect.top +1
+            personajePrincipal.saltar=False
+            personajePrincipal.aumento= -30
+
+        
+        #Si no lo está, verificamos si ha colisionado con uno de los lados del sprite (left, right)
+        else:
+
+            if personajePrincipal.rect.right <= (colisionTuberia[0].rect.left + 20): 
+
+                #print(colisionTuberia[0].rect.left)
+
+                personajePrincipal.rect.right= colisionTuberia[0].rect.left
+
+
+            elif personajePrincipal.rect.left >= (colisionTuberia[0].rect.right - 20):
+
+                personajePrincipal.rect.left= colisionTuberia[0].rect.right
+

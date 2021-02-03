@@ -10,7 +10,7 @@ decoracion= os.path.join(dirBloques, "Decoracion")
 bloques= {"Bonus": [], "Montanias": [], "Nubes": [], 
         "Suelo": pg.image.load(os.path.join(decoracion, "Suelo.png")), 
         "Arbol": pg.image.load(os.path.join(decoracion, "arboles.png")) ,
-        "Tuberia": pg.transform.scale(pg.image.load(os.path.join(Especiales, "tuberia.png")), (75,139))}
+        "Tuberia": pg.transform.scale(pg.image.load(os.path.join(Especiales, "tuberia.png")), (80,139))}
 
 
 for x in range(2):
